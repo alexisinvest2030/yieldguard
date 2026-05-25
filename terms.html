@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terms of Service — YieldGuard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f0d;
+    --surface: #111a14;
+    --border: #1e2d22;
+    --accent: #2ecc71;
+    --accent-dim: #1a7a44;
+    --text: #e8f0ea;
+    --text-muted: #6b8a72;
+    --text-faint: #3a4f3e;
+    --warn: #e2a52e;
+    --warn-bg: rgba(226,165,46,0.05);
+    --warn-border: rgba(226,165,46,0.2);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--text-faint) 1px, transparent 1px),
+      linear-gradient(90deg, var(--text-faint) 1px, transparent 1px);
+    background-size: 60px 60px;
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,15,13,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 48px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+
+  .logo-icon {
+    width: 28px;
+    height: 28px;
+    background: var(--accent);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+
+  .logo-text {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    color: var(--text);
+  }
+
+  nav a.back {
+    font-size: 13px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.05em;
+    transition: color 0.2s;
+  }
+  nav a.back:hover { color: var(--accent); }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 72px 32px 120px;
+  }
+
+  .doc-header {
+    margin-bottom: 56px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .doc-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(36px, 5vw, 52px);
+    font-weight: 400;
+    line-height: 1.15;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+
+  .doc-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent-dim);
+    border-radius: 8px;
+    padding: 24px 28px;
+    margin-bottom: 56px;
+  }
+
+  .toc-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .toc ol {
+    list-style: none;
+    counter-reset: toc;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 24px;
+  }
+
+  @media(max-width:600px){ .toc ol { grid-template-columns: 1fr; } }
+
+  .toc li {
+    counter-increment: toc;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .toc li::before {
+    content: counter(toc, decimal-leading-zero);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-faint);
+    min-width: 20px;
+  }
+
+  .toc a {
+    font-size: 13px;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .toc a:hover { color: var(--accent); }
+
+  section {
+    margin-bottom: 52px;
+    scroll-margin-top: 80px;
+  }
+
+  h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--text);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  h2 .section-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    background: rgba(46,204,113,0.08);
+    border: 1px solid rgba(46,204,113,0.2);
+    border-radius: 4px;
+    padding: 2px 7px;
+    letter-spacing: 0.05em;
+  }
+
+  p {
+    font-size: 15px;
+    color: #c8d8ca;
+    margin-bottom: 16px;
+  }
+
+  ul, ol {
+    margin: 12px 0 20px 0;
+    padding-left: 0;
+    list-style: none;
+  }
+
+  ul li, ol li {
+    font-size: 15px;
+    color: #c8d8ca;
+    padding: 6px 0 6px 20px;
+    position: relative;
+    border-bottom: 1px solid var(--text-faint);
+  }
+  ul li:last-child, ol li:last-child { border-bottom: none; }
+
+  ul li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent-dim);
+    font-size: 12px;
+  }
+
+  ol { counter-reset: list; }
+  ol li { counter-increment: list; }
+  ol li::before {
+    content: counter(list) '.';
+    position: absolute;
+    left: 0;
+    color: var(--accent-dim);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    top: 8px;
+  }
+
+  strong { color: var(--text); font-weight: 500; }
+
+  .highlight-box {
+    background: rgba(46,204,113,0.04);
+    border: 1px solid rgba(46,204,113,0.15);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 20px 0;
+  }
+  .highlight-box p { margin-bottom: 0; color: var(--text-muted); font-size: 14px; }
+  .highlight-box strong { color: var(--accent); }
+
+  .warning-box {
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-border);
+    border-left: 3px solid var(--warn);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 20px 0;
+  }
+  .warning-box p { margin-bottom: 0; color: #c8aa70; font-size: 14px; }
+  .warning-box strong { color: var(--warn); }
+
+  .plan-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 14px;
+  }
+  .plan-table th {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .plan-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--text-faint);
+    color: #c8d8ca;
+  }
+  .plan-table tr:last-child td { border-bottom: none; }
+  .plan-table td:first-child { color: var(--text); font-weight: 500; }
+
+  .contact-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px 32px;
+    margin-top: 16px;
+  }
+  .contact-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .contact-item:last-child { border-bottom: none; }
+  .contact-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    min-width: 80px;
+    letter-spacing: 0.06em;
+  }
+  .contact-value { font-size: 14px; color: var(--text); }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  footer {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid var(--border);
+    padding: 32px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  footer p {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-faint);
+    margin: 0;
+  }
+  footer nav { background: none; border: none; padding: 0; height: auto; position: static; backdrop-filter: none; }
+  footer nav a { font-size: 11px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">
+    <div class="logo-icon">⚡</div>
+    <span class="logo-text">YieldGuard</span>
+  </a>
+  <a href="/" class="back">← Back to app</a>
+</nav>
+
+<div class="container">
+
+  <div class="doc-header">
+    <div class="doc-label">Legal Document</div>
+    <h1>Terms of Service</h1>
+    <div class="doc-meta">
+      <span>📅 Effective: May 16, 2026</span>
+      <span>🔄 Last updated: May 16, 2026</span>
+      <span>⚖️ Governing law: EU</span>
+    </div>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Table of Contents</div>
+    <ol>
+      <li><a href="#s1">Acceptance of Terms</a></li>
+      <li><a href="#s2">Description of Service</a></li>
+      <li><a href="#s3">Eligibility</a></li>
+      <li><a href="#s4">Accounts & Authentication</a></li>
+      <li><a href="#s5">Subscription Plans & Billing</a></li>
+      <li><a href="#s6">Acceptable Use</a></li>
+      <li><a href="#s7">Disclaimer of Warranties</a></li>
+      <li><a href="#s8">Limitation of Liability</a></li>
+      <li><a href="#s9">Intellectual Property</a></li>
+      <li><a href="#s10">Termination</a></li>
+      <li><a href="#s11">Changes to Terms</a></li>
+      <li><a href="#s12">Governing Law & Disputes</a></li>
+      <li><a href="#s13">Contact</a></li>
+    </ol>
+  </div>
+
+  <div class="warning-box">
+    <p><strong>⚠ Not financial advice.</strong> YieldGuard provides informational data only. Nothing on this platform constitutes investment advice, a recommendation to buy/sell assets, or a guarantee of returns. DeFi carries significant risk including total loss of funds. You are solely responsible for your financial decisions.</p>
+  </div>
+
+  <!-- 1 -->
+  <section id="s1">
+    <h2><span class="section-num">01</span> Acceptance of Terms</h2>
+    <p>By creating an account or using YieldGuard ("the Service"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree, do not use the Service.</p>
+    <p>These Terms form a legally binding agreement between you and the operator of YieldGuard, an individual developer based in Romania ("we", "us", "operator").</p>
+  </section>
+
+  <!-- 2 -->
+  <section id="s2">
+    <h2><span class="section-num">02</span> Description of Service</h2>
+    <p>YieldGuard is a <strong>data aggregation and monitoring tool</strong> that:</p>
+    <ul>
+      <li>Fetches and displays publicly available APY data from DeFi protocols via the DeFiLlama API</li>
+      <li>Sends configurable Telegram alerts when yield thresholds are met</li>
+      <li>Provides a dashboard to compare lending, liquidity pool, and staking opportunities</li>
+    </ul>
+    <p>The Service does <strong>not</strong>:</p>
+    <ul>
+      <li>Execute transactions on your behalf</li>
+      <li>Hold custody of any funds or digital assets</li>
+      <li>Provide investment, legal, or tax advice</li>
+      <li>Guarantee the accuracy, completeness, or timeliness of APY data</li>
+    </ul>
+  </section>
+
+  <!-- 3 -->
+  <section id="s3">
+    <h2><span class="section-num">03</span> Eligibility</h2>
+    <p>You must be at least <strong>18 years old</strong> to use the Service. By registering, you represent that you meet this requirement.</p>
+    <p>The Service is available globally. However, if your jurisdiction prohibits access to DeFi-related information services, you are responsible for compliance with local law. We make no representation that the Service is appropriate or legal in all jurisdictions.</p>
+  </section>
+
+  <!-- 4 -->
+  <section id="s4">
+    <h2><span class="section-num">04</span> Accounts & Authentication</h2>
+    <ul>
+      <li>One account per email address. Creating multiple accounts to circumvent plan limits is prohibited.</li>
+      <li>Magic links are single-use and expire after 15 minutes. Do not share them.</li>
+      <li>You are responsible for all activity under your account.</li>
+      <li>If you suspect unauthorized access, contact <a href="mailto:support@yieldguard.app">support@yieldguard.app</a> immediately.</li>
+    </ul>
+  </section>
+
+  <!-- 5 -->
+  <section id="s5">
+    <h2><span class="section-num">05</span> Subscription Plans & Billing</h2>
+    <p>YieldGuard offers the following plans:</p>
+    <table class="plan-table">
+      <thead>
+        <tr>
+          <th>Plan</th>
+          <th>Price</th>
+          <th>Billing</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Free</td><td>$0</td><td>—</td></tr>
+        <tr><td>Starter</td><td>$9 / month</td><td>Monthly, Stripe</td></tr>
+        <tr><td>Pro</td><td>$19 / month</td><td>Monthly, Stripe</td></tr>
+        <tr><td>Enterprise</td><td>$49 / month</td><td>Monthly, Stripe</td></tr>
+      </tbody>
+    </table>
+
+    <p><strong>Billing terms:</strong></p>
+    <ul>
+      <li>Subscriptions renew automatically on the same day each month until cancelled</li>
+      <li>You may cancel at any time via your account dashboard; cancellation takes effect at end of the current billing period</li>
+      <li>No refunds for partial months, except where required by applicable EU consumer law (14-day right of withdrawal for digital services under Directive 2011/83/EU, provided you have not accessed the paid features)</li>
+      <li>Prices may change with 30 days' notice by email</li>
+      <li>Failed payments result in service downgrade to the Free plan after 7 days</li>
+    </ul>
+
+    <div class="highlight-box">
+      <p><strong>EU right of withdrawal:</strong> Under EU Directive 2011/83/EU, you have 14 days from subscription start to withdraw and receive a full refund, provided you have not used the paid features. To exercise this right, email <a href="mailto:support@yieldguard.app">support@yieldguard.app</a>.</p>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section id="s6">
+    <h2><span class="section-num">06</span> Acceptable Use</h2>
+    <p>You agree not to:</p>
+    <ul>
+      <li>Scrape, crawl, or use automated means to extract data from the Service beyond normal usage</li>
+      <li>Attempt to reverse-engineer, decompile, or access the underlying API without authorization</li>
+      <li>Use the Service to build a competing product that resells our data or dashboards</li>
+      <li>Impersonate another user or person</li>
+      <li>Use the Service in any way that violates applicable law</li>
+      <li>Attempt to compromise the security of the Service or its users</li>
+    </ul>
+    <p>Violation of these terms may result in immediate account termination without refund.</p>
+  </section>
+
+  <!-- 7 -->
+  <section id="s7">
+    <h2><span class="section-num">07</span> Disclaimer of Warranties</h2>
+    <div class="warning-box">
+      <p><strong>The Service is provided "as is" and "as available"</strong> without warranties of any kind, express or implied, including but not limited to merchantability, fitness for a particular purpose, or non-infringement.</p>
+    </div>
+    <p>Specifically, we do not warrant that:</p>
+    <ul>
+      <li>APY data is accurate, complete, or current — data is sourced from DeFiLlama and may be delayed or incorrect</li>
+      <li>Telegram alerts will be delivered in a timely manner or at all</li>
+      <li>The Service will be available without interruption, error-free, or secure</li>
+      <li>Any yield opportunity identified by the Service will be profitable or safe</li>
+    </ul>
+    <p><strong>DeFi is inherently risky.</strong> Smart contract bugs, protocol exploits, depeg events, and liquidity crises can result in total loss of funds. Past APY data does not predict future returns.</p>
+  </section>
+
+  <!-- 8 -->
+  <section id="s8">
+    <h2><span class="section-num">08</span> Limitation of Liability</h2>
+    <p>To the maximum extent permitted by applicable law, the operator shall not be liable for:</p>
+    <ul>
+      <li>Any financial loss arising from use of or reliance on data displayed by the Service</li>
+      <li>Loss of funds in DeFi protocols, regardless of whether information about those protocols was obtained from the Service</li>
+      <li>Indirect, incidental, special, consequential, or punitive damages</li>
+      <li>Service interruptions, data loss, or security breaches beyond our reasonable control</li>
+    </ul>
+    <p>Our total liability to you for any claim shall not exceed the amount you paid to us in the <strong>3 months</strong> preceding the claim.</p>
+    <p>This limitation does not apply to liability for death or personal injury caused by negligence, or fraud — which cannot be limited under EU law.</p>
+  </section>
+
+  <!-- 9 -->
+  <section id="s9">
+    <h2><span class="section-num">09</span> Intellectual Property</h2>
+    <p>All content, design, code, and branding of YieldGuard is owned by the operator and protected by applicable intellectual property law. You receive a limited, non-exclusive, non-transferable license to use the Service for personal, non-commercial purposes.</p>
+    <p>APY data displayed originates from DeFiLlama (open-source) and individual DeFi protocols. We claim no ownership over third-party data.</p>
+  </section>
+
+  <!-- 10 -->
+  <section id="s10">
+    <h2><span class="section-num">10</span> Termination</h2>
+    <p><strong>By you:</strong> You may close your account at any time by emailing <a href="mailto:support@yieldguard.app">support@yieldguard.app</a> or using the account deletion option in settings. Deletion is permanent and removes all your data within 30 days.</p>
+    <p><strong>By us:</strong> We may suspend or terminate your account if you violate these Terms, abuse the Service, or fail to pay subscription fees. We will provide notice by email except in cases of serious abuse.</p>
+    <p>Upon termination, your right to use the Service ceases immediately. Paid subscription fees for unused periods are non-refundable except as required by EU consumer law.</p>
+  </section>
+
+  <!-- 11 -->
+  <section id="s11">
+    <h2><span class="section-num">11</span> Changes to Terms</h2>
+    <p>We may update these Terms to reflect changes in the Service, business, or applicable law. Material changes will be communicated by email at least <strong>14 days</strong> before they take effect.</p>
+    <p>Continued use of the Service after the effective date of updated Terms constitutes acceptance. If you do not accept the new Terms, you may close your account before they take effect.</p>
+  </section>
+
+  <!-- 12 -->
+  <section id="s12">
+    <h2><span class="section-num">12</span> Governing Law & Disputes</h2>
+    <p>These Terms are governed by and construed in accordance with the laws of the <strong>European Union</strong>, including GDPR and applicable EU consumer protection directives, as implemented in the member state of Romania where the operator is based.</p>
+    <p>For EU consumers, mandatory local consumer protection laws in your country of residence also apply and cannot be waived by these Terms.</p>
+    <p>Disputes shall be resolved first by good-faith negotiation. If unresolved within 30 days, disputes shall be submitted to the competent courts of the EU member state where the operator is based. EU consumers may also use the EU Online Dispute Resolution platform at <a href="https://ec.europa.eu/consumers/odr" target="_blank">ec.europa.eu/consumers/odr</a>.</p>
+  </section>
+
+  <!-- 13 -->
+  <section id="s13">
+    <h2><span class="section-num">13</span> Contact</h2>
+    <div class="contact-block">
+      <div class="contact-item">
+        <span class="contact-label">Service</span>
+        <span class="contact-value">YieldGuard (yieldguard.app)</span>
+      </div>
+      <div class="contact-item">
+        <span class="contact-label">Country</span>
+        <span class="contact-value">Romania, European Union</span>
+      </div>
+      <div class="contact-item">
+        <span class="contact-label">Support</span>
+        <span class="contact-value"><a href="mailto:support@yieldguard.app">support@yieldguard.app</a></span>
+      </div>
+      <div class="contact-item">
+        <span class="contact-label">Legal</span>
+        <span class="contact-value"><a href="mailto:privacy@yieldguard.app">privacy@yieldguard.app</a></span>
+      </div>
+      <div class="contact-item">
+        <span class="contact-label">ODR</span>
+        <span class="contact-value"><a href="https://ec.europa.eu/consumers/odr" target="_blank">ec.europa.eu/consumers/odr</a></span>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <p>© 2026 YieldGuard. All rights reserved.</p>
+  <nav>
+    <a href="/privacy-policy.html" class="back">Privacy Policy</a>
+    &nbsp;&nbsp;
+    <a href="/terms-of-service.html" style="color: var(--accent);">Terms of Service</a>
+  </nav>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,1986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YieldGuard — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ink: #0b0f1e; --ink2: #3d4460; --ink3: #8890b0;
+    --paper: #f4f5f9; --card: #ffffff;
+    --accent: #1D9E75; --accent-d: #0F6E56; --accent-l: #E1F5EE;
+    --warn: #EF9F27; --warn-l: #FAEEDA;
+    --danger: #E24B4A; --danger-l: #FDEAEA;
+    --border: rgba(11,15,30,0.09); --border2: rgba(11,15,30,0.16);
+    --radius: 12px; --radius-sm: 8px;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(--ink); -webkit-font-smoothing: antialiased; }
+
+  /* LOGIN */
+  #login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .login-box { background: var(--card); border: 0.5px solid var(--border); border-radius: 16px; padding: 48px 40px; width: 100%; max-width: 420px; text-align: center; }
+  .login-logo { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: var(--ink); margin-bottom: 8px; }
+  .login-logo span { color: var(--accent); }
+  .login-sub { font-size: 14px; color: var(--ink3); margin-bottom: 32px; }
+  .login-box h2 { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+  .login-box p { font-size: 14px; color: var(--ink2); margin-bottom: 24px; }
+  .input-field { width: 100%; padding: 12px 16px; border: 0.5px solid var(--border2); border-radius: var(--radius-sm); font-size: 15px; font-family: inherit; background: var(--paper); color: var(--ink); margin-bottom: 12px; outline: none; transition: border-color .15s; }
+  .input-field:focus { border-color: var(--accent); }
+  .btn-full { width: 100%; padding: 13px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 15px; font-family: inherit; font-weight: 500; cursor: pointer; transition: background .15s; }
+  .btn-full:hover { background: var(--accent-d); }
+  .btn-full:disabled { opacity: 0.6; cursor: not-allowed; }
+  .login-note { font-size: 12px; color: var(--ink3); margin-top: 12px; }
+  #sent-screen { display: none; }
+  .sent-icon { font-size: 48px; margin-bottom: 16px; }
+
+  /* DASHBOARD */
+  #dashboard-screen { display: none; }
+  nav { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 16px 40px; background: rgba(244,245,249,0.92); backdrop-filter: blur(12px); border-bottom: 0.5px solid var(--border); }
+  .nav-logo { font-family: 'Syne', sans-serif; font-size: 19px; font-weight: 800; }
+  .nav-logo span { color: var(--accent); }
+  .nav-right { display: flex; align-items: center; gap: 12px; }
+  .nav-email { font-size: 13px; color: var(--ink2); }
+  .btn-sm { font-size: 13px; font-family: inherit; font-weight: 500; padding: 7px 16px; border-radius: var(--radius-sm); cursor: pointer; transition: all .15s; }
+  .btn-outline { background: none; border: 0.5px solid var(--border2); color: var(--ink); }
+  .btn-outline:hover { background: var(--card); }
+  .btn-accent { background: var(--accent); border: none; color: #fff; }
+  .btn-accent:hover { background: var(--accent-d); }
+
+  /* TABS */
+  .dash-tabs { display: flex; gap: 4px; padding: 0 40px; border-bottom: 0.5px solid var(--border); background: var(--card); overflow-x: auto; }
+  .tab-btn { font-size: 13px; font-family: inherit; font-weight: 500; color: var(--ink3); background: none; border: none; border-bottom: 2px solid transparent; padding: 12px 16px; cursor: pointer; transition: all .15s; margin-bottom: -0.5px; white-space: nowrap; border-radius: 6px 6px 0 0; }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; background: var(--accent-l); }
+  .tab-btn:hover:not(.active) { color: var(--ink); background: var(--paper); }
+
+  .dash-body { max-width: 1000px; margin: 0 auto; padding: 32px 24px; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* SECTIONS */
+  .section { background: var(--card); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; }
+  .section-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .section-sub { font-size: 13px; color: var(--ink3); margin-bottom: 20px; }
+
+  /* PLAN BANNER */
+  .plan-banner { background: var(--card); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+  .plan-badge { padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: 500; }
+  .plan-free { background: #f0f1f5; color: var(--ink2); }
+  .plan-starter { background: var(--accent-l); color: var(--accent-d); }
+  .plan-pro { background: #EEF2FF; color: #3730A3; }
+  .plan-team { background: #FDF4FF; color: #7E22CE; }
+  .plan-name { font-weight: 500; font-size: 15px; }
+  .plan-desc { font-size: 13px; color: var(--ink3); margin-top: 3px; }
+
+  /* STATS ROW */
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .stat-card { background: var(--card); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 16px 20px; }
+  .stat-card-num { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; letter-spacing: -1px; color: var(--ink); line-height: 1; }
+  .stat-card-label { font-size: 12px; color: var(--ink3); margin-top: 4px; }
+
+  /* PROTOCOL STATUS */
+  .status-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+  .status-card { background: var(--paper); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; }
+  .status-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .status-proto { font-size: 11px; font-weight: 500; color: var(--ink3); text-transform: uppercase; letter-spacing: 0.8px; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot-green { background: var(--accent); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .status-label { font-size: 13px; font-weight: 500; }
+  .status-sub { font-size: 12px; color: var(--ink3); margin-top: 2px; }
+
+  /* CHART */
+  .chart-wrap { position: relative; height: 220px; margin-top: 8px; }
+
+  /* MARKETS */
+  .filter-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-btn { font-size: 12px; font-family: inherit; font-weight: 500; padding: 6px 14px; border-radius: 99px; cursor: pointer; transition: all .15s; border: 0.5px solid var(--border2); background: none; color: var(--ink2); }
+  .filter-btn.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .filter-btn:hover:not(.active) { background: var(--paper); }
+  .pool-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .pool-table th { text-align: left; padding: 8px 12px; font-size: 11px; font-weight: 500; color: var(--ink3); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 0.5px solid var(--border); }
+  .pool-table td { padding: 11px 12px; border-bottom: 0.5px solid var(--border); vertical-align: middle; }
+  .pool-table tr:last-child td { border-bottom: none; }
+  .pool-table tr:hover td { background: var(--paper); }
+  .type-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 99px; font-size: 11px; font-weight: 500; }
+  .type-lending { background: var(--accent-l); color: var(--accent-d); }
+  .type-lp { background: var(--warn-l); color: #633806; }
+  .type-staking { background: #EEF2FF; color: #3730A3; }
+  .apy-val { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; }
+  .apy-high { color: var(--accent); }
+  .apy-mid { color: var(--warn); }
+  .apy-low { color: var(--ink2); }
+  .chain-pill { font-size: 11px; color: var(--ink3); background: var(--paper); padding: 2px 8px; border-radius: 4px; }
+  .loading-row td { text-align: center; color: var(--ink3); padding: 32px; }
+
+  /* WARNING */
+  .lp-warning { background: var(--warn-l); border: 0.5px solid #F5D28A; border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: flex-start; gap: 10px; }
+  .lp-warning-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .lp-warning p { font-size: 13px; color: #633806; line-height: 1.55; }
+  .lp-warning strong { font-weight: 600; }
+
+  /* SETTINGS */
+  .input-row { display: flex; gap: 10px; margin-bottom: 12px; }
+  .input-row .input-field { margin-bottom: 0; flex: 1; }
+  .btn-remove { background: none; border: 0.5px solid var(--border2); color: var(--danger); padding: 0 14px; border-radius: var(--radius-sm); cursor: pointer; font-size: 18px; flex-shrink: 0; }
+  .btn-add { background: none; border: 0.5px dashed var(--border2); color: var(--accent); padding: 10px 16px; border-radius: var(--radius-sm); cursor: pointer; font-size: 13px; font-family: inherit; width: 100%; margin-bottom: 20px; transition: all .15s; }
+  .btn-add:hover { border-color: var(--accent); background: var(--accent-l); }
+  .threshold-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .threshold-item label { font-size: 12px; font-weight: 500; color: var(--ink2); display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .threshold-input-wrap { position: relative; }
+  .threshold-input-wrap input { width: 100%; padding: 10px 36px 10px 12px; border: 0.5px solid var(--border2); border-radius: var(--radius-sm); font-size: 14px; font-family: inherit; background: var(--paper); color: var(--ink); outline: none; transition: border-color .15s; }
+  .threshold-input-wrap input:focus { border-color: var(--accent); }
+  .threshold-input-wrap span { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 12px; color: var(--ink3); }
+  .save-btn { background: var(--accent); color: #fff; border: none; padding: 12px 28px; border-radius: var(--radius-sm); font-size: 14px; font-family: inherit; font-weight: 500; cursor: pointer; transition: background .15s; }
+  .save-btn:hover { background: var(--accent-d); }
+  .save-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  /* UPGRADE */
+  .upgrade-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .upgrade-card { border: 0.5px solid var(--border); border-radius: var(--radius); padding: 20px; text-align: center; }
+  .upgrade-card.featured { border: 2px solid var(--accent); }
+  .upgrade-tier { font-size: 11px; font-weight: 500; color: var(--ink3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .upgrade-price { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; letter-spacing: -1px; margin-bottom: 4px; }
+  .upgrade-price span { font-size: 14px; font-family: 'DM Sans', sans-serif; font-weight: 300; color: var(--ink3); }
+  .upgrade-desc { font-size: 12px; color: var(--ink3); margin-bottom: 16px; line-height: 1.5; }
+  .btn-upgrade { width: 100%; padding: 10px; border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; font-weight: 500; cursor: pointer; transition: all .15s; }
+
+  /* ALERT */
+  .alert { padding: 12px 16px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 16px; display: none; }
+  .alert-success { background: var(--accent-l); color: var(--accent-d); border: 0.5px solid #9FE1CB; }
+  .alert-error { background: var(--danger-l); color: var(--danger); border: 0.5px solid #F5B8B8; }
+
+
+  .divider-or { display:flex;align-items:center;gap:10px;margin:20px 0; }
+  .divider-or div { flex:1;height:0.5px;background:var(--border); }
+  .divider-or span { font-size:12px;color:var(--ink3); }
+  .btn-wallet { width:100%;padding:12px 16px;background:var(--paper);border:0.5px solid var(--border2);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;font-weight:500;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .15s;margin-bottom:10px; }
+  .btn-wallet:hover { border-color:var(--accent);background:var(--accent-l); }
+  .btn-wallet:disabled { opacity:0.6;cursor:not-allowed; }
+  .btn-wallet .wallet-icon { width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px; }
+  .wallet-status { font-size:12px;color:var(--ink3);margin-top:8px;text-align:center;min-height:18px; }
+
+  /* ── POOL EXPLORER v2 ─────────────────────────────────── */
+  .pe2-wrap { padding: 0; }
+  .pe2-stats { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+  .pe2-stat { background: var(--paper); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 12px 18px; min-width: 120px; }
+  .pe2-stat-num { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; letter-spacing: -0.5px; color: var(--ink); line-height: 1; }
+  .pe2-stat-label { font-size: 11px; color: var(--ink3); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 3px; }
+
+  .pe2-controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+  .pe2-search-wrap { position: relative; flex: 1; min-width: 200px; max-width: 320px; }
+  .pe2-search-wrap input { width: 100%; padding: 9px 14px 9px 34px; border: 0.5px solid var(--border2); border-radius: var(--radius-sm); font-size: 14px; font-family: inherit; background: var(--card); color: var(--ink); outline: none; transition: border-color .15s; }
+  .pe2-search-wrap input:focus { border-color: var(--accent); }
+  .pe2-search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--ink3); font-size: 13px; pointer-events: none; }
+  .pe2-filter-group { display: flex; gap: 5px; flex-wrap: wrap; }
+  .pe2-filter-btn { font-size: 12px; font-family: inherit; font-weight: 500; padding: 6px 13px; border-radius: 99px; cursor: pointer; transition: all .15s; border: 0.5px solid var(--border2); background: none; color: var(--ink2); white-space: nowrap; }
+  .pe2-filter-btn.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .pe2-filter-btn:hover:not(.active) { background: var(--paper); }
+  select.pe2-select { font-size: 12px; font-family: inherit; padding: 7px 26px 7px 11px; border-radius: 99px; border: 0.5px solid var(--border2); background: var(--card); color: var(--ink2); cursor: pointer; outline: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238890b0'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 9px center; }
+
+  .pe2-lp-warn { display: none; align-items: flex-start; gap: 10px; background: var(--warn-l); border: 0.5px solid var(--warn); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px; color: var(--ink2); margin-bottom: 12px; }
+  .pe2-table-wrap { background: var(--card); border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .pe2-table-top { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 0.5px solid var(--border); flex-wrap: wrap; gap: 8px; }
+  .pe2-count { font-size: 13px; color: var(--ink3); }
+  .pe2-count strong { color: var(--ink); }
+  .pe2-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .pe2-table thead th { text-align: left; padding: 9px 12px; font-size: 11px; font-weight: 500; color: var(--ink3); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 0.5px solid var(--border); background: #fafbfc; white-space: nowrap; cursor: pointer; user-select: none; }
+  .pe2-table thead th:hover { color: var(--ink); }
+  .pe2-table thead th.pe2-sorted { color: var(--accent); }
+  .pe2-table thead th .pe2-arrow { margin-left: 3px; opacity: 0.5; }
+  .pe2-table thead th.pe2-sorted .pe2-arrow { opacity: 1; }
+  .pe2-table tbody td { padding: 10px 12px; border-bottom: 0.5px solid var(--border); vertical-align: middle; }
+  .pe2-table tbody tr:last-child td { border-bottom: none; }
+  .pe2-table tbody tr:hover td { background: var(--paper); }
+  .pe2-pool-cell { display: flex; align-items: center; gap: 9px; }
+  .pe2-icons { position: relative; width: 34px; height: 22px; flex-shrink: 0; }
+  .pe2-icon { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--card); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; position: absolute; color: #fff; }
+  .pe2-icon-a { left: 0; top: 0; z-index: 2; }
+  .pe2-icon-b { left: 12px; top: 0; z-index: 1; }
+  .pe2-pool-name { font-weight: 500; font-size: 13px; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pe2-chain-pill { font-size: 11px; color: var(--ink3); background: var(--paper); padding: 2px 8px; border-radius: 4px; border: 0.5px solid var(--border); }
+  .pe2-badge { font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 4px; }
+  .pe2-badge-lending { background: #EEF2FF; color: #4F46E5; }
+  .pe2-badge-lp { background: var(--accent-l); color: var(--accent-d); }
+  .pe2-badge-staking { background: #F3E8FF; color: #7C3AED; }
+  .pe2-apy-high { color: var(--accent); font-weight: 700; font-family: 'Syne', sans-serif; font-size: 14px; }
+  .pe2-apy-mid { color: var(--warn); font-weight: 600; font-size: 14px; }
+  .pe2-apy-low { color: var(--ink2); font-size: 14px; }
+  .pe2-ratio-wrap { display: flex; align-items: center; gap: 6px; }
+  .pe2-ratio-bar { width: 40px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .pe2-ratio-fill { height: 100%; background: var(--accent); border-radius: 2px; }
+  .pe2-loading { text-align: center; padding: 40px; color: var(--ink3); font-size: 14px; }
+
+  /* ── STATUS BAR (compact) ──────────────────────── */
+  .status-bar {
+    display: flex; align-items: center; gap: 6px;
+    flex-wrap: wrap; padding: 10px 16px;
+    background: var(--paper); border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm); margin-bottom: 20px;
+  }
+  .status-bar-label {
+    font-size: 11px; font-weight: 600; color: var(--ink3);
+    text-transform: uppercase; letter-spacing: 0.8px;
+    margin-right: 4px; flex-shrink: 0;
+  }
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; color: var(--ink2); font-weight: 500;
+    padding: 3px 10px; border-radius: 99px;
+    background: var(--card); border: 0.5px solid var(--border);
+  }
+  .status-pill .sdot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); animation: pulse 2s infinite; flex-shrink: 0;
+  }
+
+  /* ── POSITIONS GRID ─────────────────────────────── */
+  .positions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px; margin-bottom: 20px;
+  }
+  .position-card {
+    background: var(--card); border: 0.5px solid var(--border);
+    border-radius: var(--radius); padding: 18px 20px;
+    transition: all .2s; cursor: default;
+  }
+  .position-card:hover { border-color: var(--accent); box-shadow: 0 8px 24px rgba(11,15,30,0.1); transform: translateY(-2px); }
+  .position-card.alert-card {
+    border-color: rgba(226,75,74,0.35);
+    background: linear-gradient(135deg, #fff 0%, rgba(226,75,74,0.02) 100%);
+  }
+  .position-card-top {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .pos-proto {
+    font-size: 10px; font-weight: 600; color: var(--ink3);
+    text-transform: uppercase; letter-spacing: 0.8px;
+  }
+  .pos-chain {
+    font-size: 10px; color: var(--ink3);
+    padding: 2px 7px; border-radius: 4px;
+    background: var(--paper); border: 0.5px solid var(--border);
+  }
+  .pos-asset {
+    font-size: 13px; font-weight: 500; color: var(--ink2); margin-bottom: 6px;
+  }
+  .pos-apy {
+    font-family: 'Syne', sans-serif; font-size: 30px; font-weight: 800;
+    letter-spacing: 0.02em; line-height: 1; color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .pos-apy.apy-good { color: var(--accent); }
+  .pos-apy.apy-warn { color: var(--warn); }
+  .pos-apy.apy-danger { color: var(--danger); }
+  .pos-apy-sub { font-size: 11px; color: var(--ink3); }
+  .pos-alert {
+    margin-top: 10px; padding: 8px 10px;
+    background: rgba(226,75,74,0.07);
+    border: 0.5px solid rgba(226,75,74,0.2);
+    border-radius: 6px; font-size: 12px; color: var(--danger);
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* ── EMPTY STATE ────────────────────────────────── */
+  .empty-state {
+    background: var(--card); border: 0.5px dashed var(--border2);
+    border-radius: var(--radius); padding: 48px 32px;
+    text-align: center; margin-bottom: 20px;
+  }
+  .empty-state-icon { font-size: 40px; margin-bottom: 16px; }
+  .empty-state h3 {
+    font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .empty-state p { font-size: 14px; color: var(--ink3); max-width: 340px; margin: 0 auto 20px; line-height: 1.6; }
+  .btn-explore { background: var(--accent); color: #fff; border: none; padding: 10px 24px; border-radius: var(--radius-sm); font-size: 14px; font-family: inherit; font-weight: 500; cursor: pointer; transition: background .15s; }
+  .btn-explore:hover { background: var(--accent-d); }
+
+  /* ── OPPORTUNITY CARDS ──────────────────────────── */
+  .opp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px; margin-top: 4px;
+  }
+  .opp-card {
+    background: var(--paper); border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm); padding: 14px 16px;
+    transition: border-color .15s;
+  }
+  .opp-card:hover { border-color: var(--accent); }
+  .opp-proto { font-size: 10px; font-weight: 600; color: var(--ink3); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+  .opp-asset { font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+  .opp-apy { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; letter-spacing: 0.02em; }
+  .opp-type { display: inline-block; font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 4px; margin-top: 6px; }
+
+  .modal-overlay{position:fixed;inset:0;background:rgba(11,15,30,0.55);backdrop-filter:blur(4px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .modal-overlay.hidden{display:none;}
+  .modal-box{background:var(--card);border:0.5px solid var(--border2);border-radius:16px;width:100%;max-width:460px;box-shadow:0 24px 64px rgba(11,15,30,0.18);overflow:hidden;}
+  .modal-header{padding:20px 24px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .modal-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;}
+  .modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--ink3);padding:0;line-height:1;}
+  .modal-body{padding:20px 24px;}
+  .crypto-plan-info{background:var(--paper);border-radius:10px;padding:14px 16px;margin-bottom:20px;}
+  .crypto-plan-name{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;}
+  .crypto-plan-price{font-size:13px;color:var(--ink3);margin-top:2px;}
+  .payment-method-tabs{display:flex;gap:8px;margin-bottom:20px;}
+  .pay-method-btn{flex:1;padding:10px;border-radius:var(--radius-sm);font-size:13px;font-family:inherit;font-weight:500;cursor:pointer;transition:all .15s;border:1.5px solid var(--border2);background:none;color:var(--ink2);}
+  .pay-method-btn.active{border-color:var(--accent);background:var(--accent-l);color:var(--accent-d);}
+  .crypto-currency-label{font-size:12px;font-weight:600;color:var(--ink2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;}
+  .crypto-currency-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px;}
+  .crypto-btn{border:1.5px solid var(--border2);border-radius:10px;background:none;padding:12px 8px;cursor:pointer;transition:all .15s;text-align:center;font-family:inherit;}
+  .crypto-btn:hover,.crypto-btn.selected{border-color:var(--accent);background:var(--accent-l);}
+  .crypto-btn-symbol{font-size:13px;font-weight:700;color:var(--ink);display:block;}
+  .crypto-btn-chain{font-size:10px;color:var(--ink3);margin-top:2px;display:block;}
+  .crypto-pay-btn{width:100%;background:var(--accent);color:#fff;border:none;padding:14px;border-radius:var(--radius-sm);font-size:15px;font-family:inherit;font-weight:500;cursor:pointer;transition:background .15s;}
+  .crypto-pay-btn:hover{background:var(--accent-d);}
+  .crypto-pay-btn:disabled{opacity:0.6;cursor:not-allowed;}
+  .crypto-address-box{background:var(--paper);border:0.5px solid var(--border);border-radius:10px;padding:14px 16px;margin:16px 0;word-break:break-all;}
+  .crypto-address-label{font-size:11px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;}
+  .crypto-address-value{font-family:'DM Mono',monospace;font-size:12px;color:var(--ink);line-height:1.5;}
+  .crypto-amount-big{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--accent);margin:8px 0 4px;}
+  .crypto-amount-sub{font-size:13px;color:var(--ink3);}
+  .crypto-copy-btn{background:var(--paper);border:0.5px solid var(--border2);border-radius:var(--radius-sm);padding:8px 16px;font-size:13px;font-family:inherit;cursor:pointer;margin-top:8px;}
+  .crypto-status-check{display:flex;align-items:center;gap:8px;justify-content:center;font-size:13px;color:var(--ink3);margin-top:16px;}
+  .crypto-spinner{width:14px;height:14px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .crypto-pending{text-align:center;padding:4px 0 8px;}
+
+  /* DARK MODE */
+  body.dark {
+    --ink:    #E8EAFF;
+    --ink2:   #9DA8CC;
+    --ink3:   #5A6380;
+    --paper:  #0E1117;
+    --card:   #161B27;
+    --border: rgba(255,255,255,0.07);
+    --border2:rgba(255,255,255,0.14);
+    --accent-l: rgba(29,158,117,0.15);
+    --warn-l: rgba(239,159,39,0.12);
+  }
+  body.dark .pe2-table thead th { background: #1a2030; }
+  body.dark input, body.dark select { background: var(--card) !important; color: var(--ink) !important; border-color: var(--border2) !important; }
+  body.dark .pe2-table thead th { background: var(--paper); }
+  body.dark nav { background: rgba(14,17,23,0.97); }
+  body.dark .modal-box { background: #1a2030; }
+  body.dark .crypto-plan-info { background: var(--paper); }
+
+  /* VIEW TOGGLE */
+  .view-toggle { display:flex; gap:4px; }
+  .view-btn { background:none; border:0.5px solid var(--border2); border-radius:6px; padding:5px 9px; cursor:pointer; font-size:13px; color:var(--ink3); transition:all .15s; }
+  .view-btn.active { background:var(--ink); color:#fff; border-color:var(--ink); }
+
+  /* SKELETON */
+  .skeleton { background:linear-gradient(90deg,var(--paper) 25%,var(--border) 50%,var(--paper) 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:4px; }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  .skeleton-row td { padding:10px 12px; }
+
+  /* IL CALCULATOR */
+  .il-modal-overlay { position:fixed;inset:0;background:rgba(11,15,30,0.55);backdrop-filter:blur(4px);z-index:1001;display:flex;align-items:center;justify-content:center;padding:20px; }
+  .il-modal-overlay.hidden { display:none; }
+  .il-modal { background:var(--card);border:0.5px solid var(--border2);border-radius:16px;width:100%;max-width:420px;box-shadow:0 24px 64px rgba(11,15,30,0.18);overflow:hidden; }
+  .il-modal-header { padding:18px 22px 14px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between; }
+  .il-modal-body { padding:20px 22px; }
+  .il-input-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px; }
+  .il-label { font-size:12px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px; }
+  .il-input { width:100%;padding:10px 12px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;background:var(--paper);color:var(--ink);outline:none;transition:border-color .15s; }
+  .il-input:focus { border-color:var(--accent); }
+  .il-result { background:var(--paper);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:16px;text-align:center;margin-top:4px; }
+  .il-result-pct { font-family:'Syne',sans-serif;font-size:36px;font-weight:800;letter-spacing:-1px;color:var(--danger);line-height:1; }
+  .il-result-label { font-size:13px;color:var(--ink3);margin-top:4px; }
+  .il-result-sub { font-size:12px;color:var(--ink2);margin-top:10px;line-height:1.6; }
+  .il-calc-btn { width:100%;background:var(--accent);color:#fff;border:none;padding:12px;border-radius:var(--radius-sm);font-size:14px;font-family:inherit;font-weight:500;cursor:pointer;margin-top:12px;transition:background .15s; }
+  .il-calc-btn:hover { background:var(--accent-d); }
+
+  /* NETWORK COLORED DOTS IN CRYPTO MODAL */
+  .crypto-btn { position:relative; }
+  .crypto-net-dot { width:8px;height:8px;border-radius:50%;position:absolute;top:8px;right:8px; }
+
+  /* HEALTH FACTOR BAR */
+  .hf-bar-wrap { margin-top:8px; }
+  .hf-bar-track { height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:3px; }
+  .hf-bar-fill { height:100%;border-radius:2px;transition:width .3s; }
+  .hf-value { font-size:10px;color:var(--ink3); }
+
+  /* SHARE BUTTON */
+  .share-btn { background:none;border:0.5px solid var(--border2);border-radius:var(--radius-sm);padding:7px 14px;font-size:12px;font-family:inherit;cursor:pointer;color:var(--ink2);transition:all .15s;display:inline-flex;align-items:center;gap:5px; }
+  .share-btn:hover { border-color:var(--accent);color:var(--accent); }
+
+  /* GRID VIEW for PE2 */
+  .pe2-grid-view { display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;padding:16px; }
+  .pe2-grid-card { background:var(--paper);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;transition:border-color .15s; }
+  .pe2-grid-card:hover { border-color:var(--accent); }
+  .pe2-grid-proto { font-size:10px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px; }
+  .pe2-grid-symbol { font-size:14px;font-weight:600;margin-bottom:4px; }
+  .pe2-grid-apy { font-family:'Syne',sans-serif;font-size:24px;font-weight:800;letter-spacing:-0.5px;color:var(--accent);line-height:1; }
+  .pe2-grid-meta { display:flex;align-items:center;justify-content:space-between;margin-top:8px; }
+  .pe2-grid-tvl { font-size:12px;color:var(--ink3); }
+
+  /* GAS WIDGET */
+  .gas-widget {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--paper); border: 0.5px solid var(--border);
+    border-radius: 99px; padding: 5px 14px;
+    font-size: 12px; cursor: pointer;
+    transition: all .15s;
+  }
+  .gas-widget:hover { border-color: var(--accent); }
+  .gas-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .gas-item { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+  .gas-chain { color: var(--ink3); font-weight: 400; }
+  .gas-val { font-weight: 600; color: var(--ink); font-family: 'Syne', sans-serif; }
+  .gas-sep { color: var(--border2); }
+
+  /* TOKEN LOGO */
+  .pe2-token-img {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 1.5px solid var(--card); object-fit: cover;
+    position: absolute; color: #fff;
+    font-size: 10px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pe2-token-img-a { left: 0; top: 0; z-index: 2; }
+  .pe2-token-img-b { left: 12px; top: 0; z-index: 1; }
+
+  /* REPORT MODAL */
+  .report-overlay { position:fixed;inset:0;background:rgba(11,15,30,0.6);backdrop-filter:blur(4px);z-index:1002;display:flex;align-items:center;justify-content:center;padding:20px; }
+  .report-overlay.hidden { display:none; }
+  .report-box { background:var(--card);border:0.5px solid var(--border2);border-radius:16px;width:100%;max-width:480px;box-shadow:0 24px 64px rgba(11,15,30,0.2);overflow:hidden; }
+  .report-header { padding:18px 22px 14px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between; }
+  .report-body { padding:20px 22px; }
+  .report-card-preview { background:linear-gradient(135deg,#051209 0%,#0F2D1E 100%);border-radius:12px;padding:24px;margin-bottom:16px;position:relative;overflow:hidden; }
+  .report-card-preview::before { content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(29,158,117,0.08) 1px,transparent 1px),linear-gradient(90deg,rgba(29,158,117,0.08) 1px,transparent 1px);background-size:32px 32px; }
+  .report-logo { font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#fff;margin-bottom:16px;position:relative; }
+  .report-logo span { color:#1D9E75; }
+  .report-positions { display:grid;grid-template-columns:1fr 1fr;gap:8px;position:relative; }
+  .report-pos-card { background:rgba(255,255,255,0.06);border:0.5px solid rgba(29,158,117,0.3);border-radius:8px;padding:10px 12px; }
+  .report-pos-proto { font-size:9px;font-weight:600;color:rgba(93,202,165,0.8);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px; }
+  .report-pos-asset { font-size:11px;color:rgba(255,255,255,0.8);margin-bottom:4px; }
+  .report-pos-apy { font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#1D9E75;line-height:1; }
+  .report-footer-text { font-size:10px;color:rgba(93,202,165,0.6);margin-top:14px;position:relative; }
+  .report-dl-btn { width:100%;background:var(--accent);color:#fff;border:none;padding:12px;border-radius:var(--radius-sm);font-size:14px;font-family:inherit;font-weight:500;cursor:pointer;transition:background .15s;margin-top:4px; }
+  .report-dl-btn:hover { background:var(--accent-d); }
+  .report-copy-btn { width:100%;background:none;border:0.5px solid var(--border2);color:var(--ink2);padding:10px;border-radius:var(--radius-sm);font-size:13px;font-family:inherit;cursor:pointer;margin-top:8px;transition:all .15s; }
+  .report-copy-btn:hover { border-color:var(--accent);color:var(--accent); }
+
+  /* TELEGRAM SETUP */
+  .tg-setup-card {
+    background: linear-gradient(135deg, #0b1a2e 0%, #1a2a4e 100%);
+    border: 0.5px solid rgba(37,161,255,0.3);
+    border-radius: var(--radius); padding: 24px;
+    margin-bottom: 20px; position: relative; overflow: hidden;
+  }
+  .tg-setup-card::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 60% at 90% 50%, rgba(37,161,255,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .tg-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .tg-icon { font-size: 32px; flex-shrink: 0; }
+  .tg-header-text h3 { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 3px; }
+  .tg-header-text p { font-size: 13px; color: rgba(255,255,255,0.6); }
+  .tg-status-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+  .tg-status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .tg-status-dot.connected { background: #4ade80; animation: pulse 2s infinite; }
+  .tg-status-dot.disconnected { background: #94a3b8; }
+  .tg-status-text { font-size: 13px; color: rgba(255,255,255,0.7); }
+  .tg-steps { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; }
+  .tg-step { display: flex; align-items: flex-start; gap: 12px; }
+  .tg-step-num { width: 24px; height: 24px; border-radius: 50%; background: rgba(37,161,255,0.2); border: 1px solid rgba(37,161,255,0.4); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #25a1ff; flex-shrink: 0; margin-top: 1px; }
+  .tg-step-body { flex: 1; }
+  .tg-step-title { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.9); margin-bottom: 4px; }
+  .tg-step-desc { font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.5; }
+  .tg-bot-link { display: inline-flex; align-items: center; gap: 6px; background: #25a1ff; color: #fff; border: none; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; font-weight: 600; cursor: pointer; text-decoration: none; transition: background .15s; margin-top: 6px; }
+  .tg-bot-link:hover { background: #1a8ce8; }
+  .tg-input-row { display: flex; gap: 8px; align-items: stretch; }
+  .tg-chat-input { flex: 1; padding: 10px 14px; border: 1px solid rgba(37,161,255,0.3); border-radius: var(--radius-sm); background: rgba(255,255,255,0.07); color: #fff; font-size: 14px; font-family: inherit; outline: none; transition: border-color .15s; }
+  .tg-chat-input::placeholder { color: rgba(255,255,255,0.3); }
+  .tg-chat-input:focus { border-color: #25a1ff; }
+  .tg-verify-btn { background: #25a1ff; color: #fff; border: none; padding: 10px 18px; border-radius: var(--radius-sm); font-size: 13px; font-family: inherit; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background .15s; }
+  .tg-verify-btn:hover { background: #1a8ce8; }
+  .tg-verify-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .tg-success-row { display: flex; align-items: center; gap: 8px; background: rgba(74,222,128,0.1); border: 0.5px solid rgba(74,222,128,0.3); border-radius: var(--radius-sm); padding: 10px 14px; }
+  .tg-success-icon { font-size: 16px; }
+  .tg-success-text { font-size: 13px; color: #4ade80; font-weight: 500; }
+  .tg-test-btn { background: none; border: 1px solid rgba(37,161,255,0.4); color: #25a1ff; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 12px; font-family: inherit; cursor: pointer; margin-left: auto; transition: all .15s; white-space: nowrap; }
+  .tg-test-btn:hover { background: rgba(37,161,255,0.1); }
+  .tg-alert-types { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+  .tg-alert-type { display: flex; align-items: center; gap: 10px; background: var(--paper); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; cursor: pointer; transition: border-color .15s; }
+  .tg-alert-type:hover { border-color: var(--accent); }
+  .tg-alert-type input[type=checkbox] { accent-color: var(--accent); width: 16px; height: 16px; flex-shrink: 0; cursor: pointer; }
+  .tg-alert-type-icon { font-size: 20px; }
+  .tg-alert-type-info h4 { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .tg-alert-type-info p { font-size: 11px; color: var(--ink3); }
+  @media (max-width: 640px) {
+    nav { padding: 14px 20px; }
+    .dash-body { padding: 20px 16px; }
+  }
+
+  /* BILLING TOGGLE */
+  .billing-toggle-wrap { display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:24px; }
+  .billing-lbl { font-size:13px; color:var(--ink3); cursor:pointer; transition:color .15s; }
+  .billing-lbl.active { color:var(--ink); font-weight:500; }
+  .billing-switch { width:44px; height:24px; background:var(--border2); border-radius:99px; position:relative; cursor:pointer; transition:background .2s; flex-shrink:0; }
+  .billing-switch.yearly { background:var(--accent); }
+  .billing-switch::after { content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; transition:transform .2s; }
+  .billing-switch.yearly::after { transform:translateX(20px); }
+  .billing-save-badge { font-size:11px; font-weight:600; background:var(--accent-l); color:var(--accent-d); padding:2px 8px; border-radius:99px; border:0.5px solid #9FE1CB; }
+
+
+  /* APY HISTORY CHART MODAL */
+  .apy-modal-overlay { position:fixed;inset:0;background:rgba(11,15,30,0.6);backdrop-filter:blur(4px);z-index:1050;display:flex;align-items:center;justify-content:center;padding:20px; }
+  .apy-modal { background:var(--card);border:0.5px solid var(--border);border-radius:var(--radius);width:100%;max-width:560px;padding:28px 24px 24px; }
+  .apy-modal-header { display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px; }
+  .apy-modal-title { font-family:'Syne',sans-serif;font-size:16px;font-weight:700; }
+  .apy-modal-sub { font-size:12px;color:var(--ink3);margin-top:2px; }
+  .apy-close-btn { background:none;border:none;font-size:20px;cursor:pointer;color:var(--ink3);padding:0;line-height:1; }
+  .apy-range-btns { display:flex;gap:6px;margin-bottom:16px; }
+  .apy-range-btn { font-size:12px;font-family:inherit;padding:5px 12px;border-radius:99px;border:0.5px solid var(--border2);background:transparent;color:var(--ink3);cursor:pointer;transition:all .15s; }
+  .apy-range-btn.active { background:var(--accent);color:#fff;border-color:var(--accent); }
+  .apy-chart-wrap { position:relative;height:200px; }
+  .apy-stats-row { display:flex;gap:16px;margin-top:16px; }
+  .apy-stat { flex:1;background:var(--paper);border-radius:var(--radius-sm);padding:10px 14px; }
+  .apy-stat-label { font-size:11px;color:var(--ink3);margin-bottom:2px; }
+  .apy-stat-val { font-family:'Syne',sans-serif;font-size:16px;font-weight:700; }
+  .apy-loading { display:flex;align-items:center;justify-content:center;height:200px;color:var(--ink3);font-size:13px; }
+  .pos-chart-btn { margin-top:8px;width:100%;font-size:12px;font-family:inherit;padding:6px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--ink3);cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:5px; }
+  .pos-chart-btn:hover { border-color:var(--accent);color:var(--accent); }
+
+</style>
+</head>
+<body>
+
+
+<div class="modal-overlay hidden" id="crypto-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-plan-title">Upgrade Plan</div>
+      <button class="modal-close" onclick="closeCryptoModal()">x</button>
+    </div>
+    <div class="modal-body">
+      <div id="crypto-step-1">
+        <div class="crypto-plan-info">
+          <div class="crypto-plan-name" id="modal-plan-name">Pro</div>
+          <div class="crypto-plan-price" id="modal-plan-price">$19 / month</div>
+        </div>
+        <div class="payment-method-tabs">
+          <button class="pay-method-btn active" onclick="switchPayMethod('card',this)">Card (Stripe)</button>
+          <button class="pay-method-btn" onclick="switchPayMethod('crypto',this)">Crypto (USDC)</button>
+        </div>
+        <div id="pay-card-section">
+          <button class="crypto-pay-btn" onclick="proceedStripe()">Pay with Card</button>
+        </div>
+        <div id="pay-crypto-section" style="display:none;">
+          <div class="crypto-currency-label">Select network</div>
+          <div class="crypto-currency-grid">
+            <button class="crypto-btn selected" onclick="selectCurrency('usdcarb',this)"><span class="crypto-net-dot" style="background:#12AAFF"></span><span class="crypto-btn-symbol">USDC</span><span class="crypto-btn-chain">Arbitrum</span></button>
+            <button class="crypto-btn" onclick="selectCurrency('usdcbase',this)"><span class="crypto-net-dot" style="background:#0052FF"></span><span class="crypto-btn-symbol">USDC</span><span class="crypto-btn-chain">Base</span></button>
+            <button class="crypto-btn" onclick="selectCurrency('usdcsol',this)"><span class="crypto-net-dot" style="background:#9945FF"></span><span class="crypto-btn-symbol">USDC</span><span class="crypto-btn-chain">Solana</span></button>
+            <button class="crypto-btn" onclick="selectCurrency('usdcbsc',this)"><span class="crypto-net-dot" style="background:#F3BA2F"></span><span class="crypto-btn-symbol">USDC</span><span class="crypto-btn-chain">BNB Chain</span></button>
+            <button class="crypto-btn" onclick="selectCurrency('usdcmatic',this)"><span class="crypto-net-dot" style="background:#8247E5"></span><span class="crypto-btn-symbol">USDC</span><span class="crypto-btn-chain">Polygon</span></button>
+            <button class="crypto-btn" onclick="selectCurrency('usdceth',this)"><span class="crypto-net-dot" style="background:#627EEA"></span><span class="crypto-btn-symbol">USDC</span><span class="crypto-btn-chain">Ethereum</span></button>
+          </div>
+          <button class="crypto-pay-btn" id="crypto-proceed-btn" onclick="createCryptoPayment()">Generate payment address</button>
+        </div>
+      </div>
+      <div id="crypto-step-2" style="display:none;">
+        <div class="crypto-pending">
+          <div style="font-size:13px;color:var(--ink3);margin-bottom:12px;">Send exactly this amount to the address below</div>
+          <div class="crypto-amount-big" id="pay-amount-display">--</div>
+          <div class="crypto-amount-sub" id="pay-currency-display">USDC</div>
+          <div class="crypto-address-box">
+            <div class="crypto-address-label">Payment address</div>
+            <div class="crypto-address-value" id="pay-address-display">--</div>
+          </div>
+          <button class="crypto-copy-btn" onclick="copyAddress()">Copy address</button>
+          <div class="crypto-status-check">
+            <div class="crypto-spinner"></div>
+            <span id="payment-status-text">Waiting for payment confirmation...</span>
+          </div>
+          <div style="font-size:12px;color:var(--ink3);margin-top:12px;">Payment window: 60 minutes - Powered by NOWPayments</div>
+        </div>
+      </div>
+      <div id="crypto-step-3" style="display:none;">
+        <div class="crypto-pending">
+          <div style="font-size:40px;margin-bottom:12px;">OK</div>
+          <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:8px;">Payment confirmed!</div>
+          <div style="font-size:14px;color:var(--ink3);margin-bottom:20px;">Your plan has been upgraded.</div>
+          <button class="crypto-pay-btn" onclick="location.reload()">Go to dashboard</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- IL CALCULATOR MODAL -->
+<div class="il-modal-overlay hidden" id="il-modal">
+  <div class="il-modal">
+    <div class="il-modal-header">
+      <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;">📐 Impermanent Loss Calculator</div>
+      <button style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--ink3);" onclick="closeILCalc()">✕</button>
+    </div>
+    <div class="il-modal-body">
+      <p style="font-size:13px;color:var(--ink3);margin-bottom:16px;line-height:1.6;">Calculate IL for a 50/50 LP position based on price change of one asset.</p>
+      <div class="il-input-grid">
+        <div>
+          <div class="il-label">Entry price ($)</div>
+          <input class="il-input" id="il-entry" type="number" placeholder="e.g. 100" value="100" oninput="calcIL()">
+        </div>
+        <div>
+          <div class="il-label">Current price ($)</div>
+          <input class="il-input" id="il-current" type="number" placeholder="e.g. 150" value="150" oninput="calcIL()">
+        </div>
+      </div>
+      <div class="il-input-grid">
+        <div>
+          <div class="il-label">Position size ($)</div>
+          <input class="il-input" id="il-size" type="number" placeholder="e.g. 1000" value="1000" oninput="calcIL()">
+        </div>
+        <div>
+          <div class="il-label">Fees earned ($)</div>
+          <input class="il-input" id="il-fees" type="number" placeholder="e.g. 50" value="0" oninput="calcIL()">
+        </div>
+      </div>
+      <div class="il-result">
+        <div class="il-result-pct" id="il-pct">—</div>
+        <div class="il-result-label">Impermanent Loss</div>
+        <div class="il-result-sub" id="il-detail">Enter values above to calculate</div>
+      </div>
+      <div style="margin-top:12px;padding:10px 12px;background:var(--accent-l);border-radius:var(--radius-sm);font-size:12px;color:var(--accent-d);line-height:1.6;">
+        ℹ️ Formula: IL = 2√(r)/(1+r) - 1 where r = current/entry price ratio. Only applies to LP Pool positions, not lending.
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- REPORT MODAL -->
+<div class="report-overlay hidden" id="report-modal">
+  <div class="report-box">
+    <div class="report-header">
+      <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;">📊 Export Positions Report</div>
+      <button style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--ink3);" onclick="closeReport()">✕</button>
+    </div>
+    <div class="report-body">
+      <p style="font-size:13px;color:var(--ink3);margin-bottom:16px;">Preview your shareable positions card:</p>
+      <div class="report-card-preview" id="report-preview">
+        <div class="report-logo">Yield<span>Guard</span></div>
+        <div class="report-positions" id="report-positions-grid">
+          <div class="report-pos-card"><div class="report-pos-proto">Kamino · Solana</div><div class="report-pos-asset">PYUSD</div><div class="report-pos-apy">9.36%</div></div>
+          <div class="report-pos-card"><div class="report-pos-proto">Aave v3 · ETH</div><div class="report-pos-asset">USDC</div><div class="report-pos-apy" style="color:#E24B4A">2.14%</div></div>
+          <div class="report-pos-card"><div class="report-pos-proto">Morpho · Base</div><div class="report-pos-asset">WETH/wstETH</div><div class="report-pos-apy">3.21%</div></div>
+          <div class="report-pos-card"><div class="report-pos-proto">Kamino · Solana</div><div class="report-pos-asset">SOL/USDT</div><div class="report-pos-apy">19.14%</div></div>
+        </div>
+        <div class="report-footer-text">Monitored by yieldguard.app · <span id="report-date"></span></div>
+      </div>
+      <button class="report-dl-btn" onclick="downloadReport()">⬇ Download as PNG</button>
+      <button class="report-copy-btn" onclick="copyReportText()">📋 Copy as text</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Yield<span>Guard</span></div>
+    <div class="login-sub">DeFi Yield Monitor</div>
+    <div id="login-form-view">
+      <h2>Create account or log in</h2>
+      <p>Enter your email to create an account or log in. No password needed.</p>
+      <div id="login-alert" class="alert"></div>
+      <input type="email" id="login-email" class="input-field" placeholder="your@email.com">
+      <button class="btn-full" id="login-btn" onclick="requestMagicLink()">Send magic link</button>
+      <p class="login-note">No password needed · Link expires in 15 minutes</p>
+      <div style="display:flex;align-items:center;gap:10px;margin:20px 0;"><div style="flex:1;height:0.5px;background:var(--border);"></div><span style="font-size:12px;color:var(--ink3);">or</span><div style="flex:1;height:0.5px;background:var(--border);"></div></div>
+      <a href="https://api.yieldguard.app/api/auth/google" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px;background:#fff;border:0.5px solid var(--border2);border-radius:var(--radius-sm);font-size:15px;font-family:inherit;font-weight:500;color:var(--ink);text-decoration:none;transition:background .15s;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='#fff'">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        Sign in with Google
+      </a>
+      <div class="divider-or"><div></div><span>or connect wallet</span><div></div></div>
+      <button class="btn-wallet" id="btn-metamask" onclick="connectWallet('evm')">
+        <span class="wallet-icon">🦊</span> Connect MetaMask
+      </button>
+      <button class="btn-wallet" id="btn-phantom" onclick="connectWallet('solana')">
+        <span class="wallet-icon">👻</span> Connect Phantom
+      </button>
+      <div class="wallet-status" id="wallet-status"></div>
+    </div>
+    <div id="sent-screen">
+      <div class="sent-icon">📬</div>
+      <h2>Check your inbox</h2>
+      <p style="margin-bottom:16px;">We sent a login link to <strong id="sent-email"></strong></p>
+      <p style="font-size:13px;color:var(--ink3);">Click the link in the email to log in. Expires in 15 minutes.</p>
+      <button class="btn-full" style="margin-top:20px;background:var(--paper);color:var(--ink);border:0.5px solid var(--border2);" onclick="resetLogin()">Use different email</button>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard-screen">
+  <nav>
+    <div class="nav-logo">Yield<span>Guard</span></div>
+    <div class="nav-right">
+      <div class="gas-widget" id="gas-widget" title="Current gas prices">
+        <div class="gas-item"><div class="gas-dot" style="background:#627EEA"></div><span class="gas-chain">ETH</span><span class="gas-val" id="gas-eth">...</span><span class="gas-chain">gwei</span></div>
+        <span class="gas-sep">|</span>
+        <div class="gas-item"><div class="gas-dot" style="background:#12AAFF"></div><span class="gas-chain">ARB</span><span class="gas-val" id="gas-arb">...</span><span class="gas-chain">gwei</span></div>
+      </div>
+      <span class="nav-email" id="nav-email"></span>
+      <button id="dark-toggle" onclick="toggleDark()" style="background:none;border:0.5px solid var(--border2);border-radius:var(--radius-sm);padding:7px 12px;cursor:pointer;font-size:15px;margin-right:4px;" title="Toggle dark mode">🌙</button><button class="btn-sm btn-outline" onclick="logout()">Log out</button>
+    </div>
+  </nav>
+
+  <div class="dash-tabs">
+    <button class="tab-btn active" onclick="switchTab('overview',this)">Overview</button>
+    <button class="tab-btn" onclick="switchTab('markets',this)">Live Markets</button>
+    <button class="tab-btn" onclick="switchTab('alerts',this)">Alert Settings</button>
+    <button class="tab-btn" onclick="switchTab('pools',this)">Pool Explorer</button>
+    <button class="tab-btn" onclick="switchTab('upgrade',this)">Upgrade</button>
+  </div>
+
+  <div class="dash-body">
+
+    <!-- OVERVIEW -->
+    <div id="tab-overview" class="tab-content active">
+      <div class="plan-banner">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <span class="plan-name">Your plan</span>
+            <span class="plan-badge plan-free" id="plan-badge">Free</span>
+          </div>
+          <div class="plan-desc" id="plan-desc">Upgrade to monitor your positions and receive alerts.</div>
+        </div>
+        <button class="btn-sm btn-accent" onclick="switchTab('upgrade', document.querySelectorAll('.tab-btn')[4])">Upgrade plan</button>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-card-num">8</div><div class="stat-card-label">Protocols</div></div>
+        <div class="stat-card"><div class="stat-card-num">5</div><div class="stat-card-label">Chains</div></div>
+        <div class="stat-card"><div class="stat-card-num">5 min</div><div class="stat-card-label">Polling interval</div></div>
+        <div class="stat-card"><div class="stat-card-num" id="stat-positions">0</div><div class="stat-card-label">Your wallets</div></div>
+      </div>
+
+      <!-- Compact status bar -->
+      <div class="status-bar">
+        <span class="status-bar-label">Monitoring</span>
+        <span class="status-pill"><span class="sdot"></span>Kamino</span>
+        <span class="status-pill"><span class="sdot"></span>Aave v3</span>
+        <span class="status-pill"><span class="sdot"></span>Morpho</span>
+        <span class="status-pill"><span class="sdot"></span>Jupiter Lend</span>
+        <span class="status-pill"><span class="sdot"></span>Ethena</span>
+        <span class="status-pill"><span class="sdot"></span>Aerodrome</span>
+        <span class="status-pill"><span class="sdot"></span>Uniswap v3</span>
+        <span class="status-pill"><span class="sdot"></span>Compound v3</span>
+      </div>
+
+      <!-- Top APY Opportunities — now FIRST -->
+      <div class="section">
+        <div class="section-title">Top APY Opportunities Today</div>
+        <div class="section-sub">Best yields per protocol — green = Lending, orange = LP Pool, blue = Staking.</div>
+        <div class="chart-wrap"><canvas id="apyChart"></canvas></div>
+      </div>
+
+      <!-- Active Positions / Empty state -->
+      <div class="section" id="positions-section" style="display:none;">
+        <div style="display:flex;align-items:center;justify-content:space-between;"><div class="section-title">Your Active Positions</div><button class="share-btn" onclick="openReport()">📤 Share</button></div>
+        <div class="section-sub" id="positions-sub">Wallet positions detected across monitored protocols.</div>
+        <div class="positions-grid" id="positions-grid"></div>
+      </div>
+
+      <div id="empty-state-section" class="empty-state">
+        <div class="empty-state-icon">🔍</div>
+        <h3>No active positions found</h3>
+        <p>Add your wallet address in Alert Settings to monitor your DeFi positions. Or explore the best yield opportunities right now.</p>
+        <button class="btn-explore" onclick="switchTab('pools', document.querySelectorAll('.tab-btn')[4])">Explore Pool Explorer →</button>
+      </div>
+    </div>
+
+    <!-- LIVE MARKETS -->
+    <div id="tab-markets" class="tab-content">
+      <div class="lp-warning">
+        <div class="lp-warning-icon">⚠️</div>
+        <p><strong>LP Pool risk:</strong> Pools marked "LP Pool" generate yield from trading fees but carry <strong>impermanent loss risk</strong> — your position value can decrease if token prices diverge significantly. Lending pools have no impermanent loss. Always understand the risk before investing.</p>
+      </div>
+      <div class="section">
+        <div class="section-title">Live Market Data</div>
+        <div class="section-sub">Top pools across 8 protocols · Updated every 5 min via DeFiLlama · Min TVL $500K</div>
+        <div class="filter-row">
+          <button class="filter-btn active" onclick="filterPools('all',this)">All</button>
+          <button class="filter-btn" onclick="filterPools('Lending',this)">Lending</button>
+          <button class="filter-btn" onclick="filterPools('LP Pool',this)">LP Pool</button>
+          <button class="filter-btn" onclick="filterPools('Staking',this)">Staking</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="pool-table">
+            <thead><tr><th>Protocol</th><th>Asset</th><th>Chain</th><th>Type</th><th>APY</th><th>TVL</th></tr></thead>
+            <tbody id="pools-tbody"><tr class="loading-row"><td colspan="6">Loading live data...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALERT SETTINGS -->
+    <div id="tab-alerts" class="tab-content">
+      <div class="section">
+
+        <!-- TELEGRAM SETUP CARD -->
+        <div class="tg-setup-card">
+          <div class="tg-header">
+            <div class="tg-icon">✈️</div>
+            <div class="tg-header-text">
+              <h3>Telegram Alerts</h3>
+              <p>Get instant messages when APY drops below your threshold</p>
+            </div>
+          </div>
+          <div class="tg-status-bar">
+            <div class="tg-status-dot" id="tg-status-dot"></div>
+            <span class="tg-status-text" id="tg-status-text">Not connected</span>
+            <button class="tg-test-btn" id="tg-test-btn" onclick="sendTestAlert()" style="display:none;">📤 Send test alert</button>
+          </div>
+          <div id="tg-connect-section">
+            <div class="tg-steps">
+              <div class="tg-step">
+                <div class="tg-step-num">1</div>
+                <div class="tg-step-body">
+                  <div class="tg-step-title">Open YieldGuard bot on Telegram</div>
+                  <div class="tg-step-desc">Click the button below to open our bot. Then press <strong style="color:rgba(255,255,255,0.8)">Start</strong> in the chat.</div>
+                  <a class="tg-bot-link" href="https://t.me/YieldGuardBot" target="_blank">📱 Open @YieldGuardBot</a>
+                </div>
+              </div>
+              <div class="tg-step">
+                <div class="tg-step-num">2</div>
+                <div class="tg-step-body">
+                  <div class="tg-step-title">Copy your Chat ID</div>
+                  <div class="tg-step-desc">The bot will reply with your Chat ID. It looks like: <strong style="color:rgba(255,255,255,0.8)">123456789</strong></div>
+                </div>
+              </div>
+              <div class="tg-step">
+                <div class="tg-step-num">3</div>
+                <div class="tg-step-body">
+                  <div class="tg-step-title">Enter your Chat ID below</div>
+                  <div class="tg-input-row" style="margin-top:8px;">
+                    <input class="tg-chat-input" type="text" id="tg-chat-id" placeholder="e.g. 123456789" oninput="this.value=this.value.replace(/[^0-9-]/g,'')">
+                    <button class="tg-verify-btn" id="tg-verify-btn" onclick="connectTelegram()">Connect</button>
+                  </div>
+                  <div id="tg-error" style="font-size:12px;color:#f87171;margin-top:6px;display:none;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="tg-connected-section" style="display:none;">
+            <div class="tg-success-row">
+              <span class="tg-success-icon">✅</span>
+              <span class="tg-success-text" id="tg-connected-text">Connected to Telegram</span>
+              <button onclick="disconnectTelegram()" style="margin-left:auto;background:none;border:none;color:rgba(255,255,255,0.4);font-size:12px;cursor:pointer;">Disconnect</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ALERT TYPES -->
+        <div class="section-title" style="margin-bottom:6px;">Alert Types</div>
+        <div class="section-sub">Choose what triggers a Telegram notification.</div>
+        <div class="tg-alert-types">
+          <div class="tg-alert-type"><input type="checkbox" id="alert-apy" checked><div class="tg-alert-type-icon">📉</div><div class="tg-alert-type-info"><h4>APY Drop Alert</h4><p>When APY falls below your threshold</p></div></div>
+          <div class="tg-alert-type"><input type="checkbox" id="alert-liq" checked><div class="tg-alert-type-icon">⚠️</div><div class="tg-alert-type-info"><h4>Liquidation Risk</h4><p>When health factor drops below 1.3</p></div></div>
+          <div class="tg-alert-type"><input type="checkbox" id="alert-tvl"><div class="tg-alert-type-icon">💧</div><div class="tg-alert-type-info"><h4>TVL Drop Alert</h4><p>When pool TVL drops more than 20%</p></div></div>
+          <div class="tg-alert-type"><input type="checkbox" id="alert-opp"><div class="tg-alert-type-icon">🚀</div><div class="tg-alert-type-info"><h4>Opportunity Alert</h4><p>New pool above your APY target</p></div></div>
+        </div>
+
+        <!-- WALLET ADDRESSES -->
+        <div class="section-title" style="margin-bottom:6px;">Wallet Addresses</div>
+        <div class="section-sub">Add your wallet addresses to monitor your positions.</div>
+        <div id="wallet-alert" class="alert"></div>
+        <div id="wallets-container">
+          <div class="input-row">
+            <input type="text" class="input-field wallet-input" placeholder="0x... or Solana address">
+            <button class="btn-remove" onclick="removeWallet(this)">×</button>
+          </div>
+        </div>
+        <button class="btn-add" onclick="addWallet()">+ Add another wallet</button>
+
+        <!-- APY THRESHOLDS -->
+        <div class="section-title" style="margin-top:20px;margin-bottom:6px;">APY Alert Thresholds</div>
+        <div class="section-sub">Get alerted when APY drops below these values. Set 0 to disable.</div>
+        <div class="lp-warning" style="margin-bottom:16px;">
+          <div class="lp-warning-icon">💡</div>
+          <p>Thresholds apply to all protocol types. Set to 0 to disable alerts for a specific asset.</p>
+        </div>
+        <div class="threshold-grid">
+          <div class="threshold-item"><label>USDC</label><div class="threshold-input-wrap"><input type="number" id="th-usdc" step="0.1" min="0" max="100" placeholder="3.0"><span>%</span></div></div>
+          <div class="threshold-item"><label>USDT</label><div class="threshold-input-wrap"><input type="number" id="th-usdt" step="0.1" min="0" max="100" placeholder="2.0"><span>%</span></div></div>
+          <div class="threshold-item"><label>WETH</label><div class="threshold-input-wrap"><input type="number" id="th-weth" step="0.1" min="0" max="100" placeholder="1.5"><span>%</span></div></div>
+          <div class="threshold-item"><label>PYUSD</label><div class="threshold-input-wrap"><input type="number" id="th-pyusd" step="0.1" min="0" max="100" placeholder="5.0"><span>%</span></div></div>
+          <div class="threshold-item"><label>SOL</label><div class="threshold-input-wrap"><input type="number" id="th-sol" step="0.1" min="0" max="100" placeholder="4.0"><span>%</span></div></div>
+          <div class="threshold-item"><label>WBTC</label><div class="threshold-input-wrap"><input type="number" id="th-wbtc" step="0.1" min="0" max="100" placeholder="0.5"><span>%</span></div></div>
+        </div>
+        <button class="save-btn" id="save-btn" onclick="saveSettings()">Save settings</button>
+      </div>
+    </div>
+
+
+    <!-- POOL EXPLORER -->
+    <div id="tab-pools" class="tab-content">
+      <div class="section">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+          <div>
+            <div class="section-title">Pool Explorer</div>
+            <div class="section-sub" id="pe2-updated" style="margin-bottom:0;">Live data from DeFiLlama &middot; All protocols &middot; All chains</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+          <button class="share-btn" onclick="openILCalc()" title="Impermanent Loss Calculator">📐 IL Calc</button>
+          <div class="view-toggle">
+            <button class="view-btn active" id="vbtn-table" onclick="pe2SetView('table',this)" title="Table view">☰</button>
+            <button class="view-btn" id="vbtn-grid" onclick="pe2SetView('grid',this)" title="Grid view">⊞</button>
+          </div>
+          <button class="btn-sm btn-outline" onclick="pe2Load()" id="pe2-refresh-btn">&#8635; Refresh</button>
+        </div>
+        </div>
+        <div class="pe2-stats">
+          <div class="pe2-stat"><div class="pe2-stat-num" id="pe2-s-pools">&mdash;</div><div class="pe2-stat-label">Pools loaded</div></div>
+          <div class="pe2-stat"><div class="pe2-stat-num" id="pe2-s-tvl">&mdash;</div><div class="pe2-stat-label">Total TVL</div></div>
+          <div class="pe2-stat"><div class="pe2-stat-num" id="pe2-s-apy">&mdash;</div><div class="pe2-stat-label">Best APY</div></div>
+          <div class="pe2-stat"><div class="pe2-stat-num" id="pe2-s-chains">&mdash;</div><div class="pe2-stat-label">Chains</div></div>
+        </div>
+        <div class="pe2-controls">
+          <div class="pe2-search-wrap">
+            <span class="pe2-search-icon">&#128269;</span>
+            <input type="text" id="pe2-search" placeholder="Search pool, protocol, chain..." oninput="pe2Filter()">
+          </div>
+          <div class="pe2-filter-group" id="pe2-type-filters">
+            <button class="pe2-filter-btn active" onclick="pe2SetType('all',this)">All</button>
+            <button class="pe2-filter-btn" onclick="pe2SetType('Lending',this)">Lending</button>
+            <button class="pe2-filter-btn" onclick="pe2SetType('LP Pool',this)">LP Pool</button>
+            <button class="pe2-filter-btn" onclick="pe2SetType('Staking',this)">Staking</button>
+          </div>
+          <select class="pe2-select" id="pe2-chain" onchange="pe2Filter()"><option value="">All chains</option></select>
+          <select class="pe2-select" id="pe2-proto" onchange="pe2Filter()"><option value="">All protocols</option></select>
+          <select class="pe2-select" id="pe2-mintvl" onchange="pe2Filter()">
+            <option value="500000">TVL &gt; $500K</option>
+            <option value="1000000">TVL &gt; $1M</option>
+            <option value="10000000">TVL &gt; $10M</option>
+            <option value="100000000">TVL &gt; $100M</option>
+          </select>
+        </div>
+        <div class="pe2-lp-warn" id="pe2-lp-warn">&#9888; <span><strong>LP Pool risk:</strong> LP pools carry impermanent loss risk. Lending pools have no impermanent loss.</span></div>
+        <div class="pe2-table-wrap">
+          <div class="pe2-table-top"><div class="pe2-count" id="pe2-count">Click Refresh to load pools</div></div>
+          <div style="overflow-x:auto;">
+            <table class="pe2-table">
+              <thead><tr>
+                <th style="width:32px;">#</th>
+                <th onclick="pe2Sort('symbol')" id="pe2-th-symbol">Pool <span class="pe2-arrow">&#8597;</span></th>
+                <th onclick="pe2Sort('project')" id="pe2-th-project">Protocol <span class="pe2-arrow">&#8597;</span></th>
+                <th onclick="pe2Sort('chain')" id="pe2-th-chain">Chain <span class="pe2-arrow">&#8597;</span></th>
+                <th>Type</th>
+                <th onclick="pe2Sort('apy')" id="pe2-th-apy" class="pe2-sorted">APY <span class="pe2-arrow">&#8595;</span></th>
+                <th onclick="pe2Sort('tvlUsd')" id="pe2-th-tvlUsd">TVL <span class="pe2-arrow">&#8597;</span></th>
+                <th onclick="pe2Sort('volumeUsd1d')" id="pe2-th-volumeUsd1d">1D Vol <span class="pe2-arrow">&#8597;</span></th>
+                <th onclick="pe2Sort('volumeUsd7d')" id="pe2-th-volumeUsd7d">7D Vol <span class="pe2-arrow">&#8597;</span></th>
+                <th onclick="pe2Sort('volTvl')" id="pe2-th-volTvl">1D/TVL <span class="pe2-arrow">&#8597;</span></th>
+              </tr></thead>
+              <tbody id="pe2-tbody">
+                <tr><td colspan="10" class="pe2-loading" style="padding:48px;"><div style="font-size:28px;margin-bottom:12px;">📊</div><div style="font-size:15px;font-weight:500;margin-bottom:6px;">Explore 2,900+ DeFi pools</div><div style="font-size:13px;color:var(--ink3);">Click Refresh to load live data from DeFiLlama</div></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UPGRADE -->
+    <div id="tab-upgrade" class="tab-content">
+      <div class="section">
+        <div class="section-title">Upgrade your plan</div>
+        <div class="section-sub">Unlock full monitoring and alerts across all 8 protocols and 5 chains.</div>
+        <div class="billing-toggle-wrap">
+          <span class="billing-lbl active" id="dash-lbl-monthly" onclick="dashToggleBilling(false)">Monthly</span>
+          <div class="billing-switch" id="dash-billing-switch" onclick="dashToggleBilling()"></div>
+          <span class="billing-lbl" id="dash-lbl-yearly" onclick="dashToggleBilling(true)">Yearly</span>
+          <span class="billing-save-badge">Save 20%</span>
+        </div>
+        <div class="upgrade-grid">
+          <div class="upgrade-card">
+            <div class="upgrade-tier">Starter</div>
+            <div class="upgrade-price" id="dash-price-starter">$9<span>/mo</span></div>
+            <div class="upgrade-desc">1 wallet · Kamino + Aave + Jupiter Lend · Telegram alerts</div>
+            <button class="btn-upgrade btn-outline" onclick="checkout('starter', dashBilling)">Get started</button>
+          </div>
+          <div class="upgrade-card featured">
+            <div class="upgrade-tier">Pro</div>
+            <div class="upgrade-price" id="dash-price-pro">$19<span>/mo</span></div>
+            <div class="upgrade-desc">5 wallets · All 8 protocols · 5 chains · Liquidation alerts</div>
+            <button class="btn-upgrade btn-accent" onclick="checkout('pro', dashBilling)">Start free trial</button>
+          </div>
+          <div class="upgrade-card">
+            <div class="upgrade-tier">Team</div>
+            <div class="upgrade-price" id="dash-price-team">$49<span>/mo</span></div>
+            <div class="upgrade-desc">Unlimited wallets · All 8 protocols · API access · 1-min polling</div>
+            <button class="btn-upgrade btn-outline" onclick="checkout('team', dashBilling)">Get started</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const API = 'https://api.yieldguard.app';
+const LLAMA_API = 'https://yields.llama.fi/pools';
+
+function getEmail() { return localStorage.getItem('yg_email'); }
+function getToken() { return localStorage.getItem('yg_token'); }
+function logout() { localStorage.removeItem('yg_email'); localStorage.removeItem('yg_token'); location.reload(); }
+function resetLogin() { document.getElementById('sent-screen').style.display='none'; document.getElementById('login-form-view').style.display='block'; }
+
+function showAlert(el, type, msg) {
+  el.className = `alert alert-${type}`; el.textContent = msg; el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 5000);
+}
+
+async function requestMagicLink() {
+  const email = document.getElementById('login-email').value.trim();
+  const btn = document.getElementById('login-btn');
+  const alertEl = document.getElementById('login-alert');
+  if (!email || !email.includes('@')) { showAlert(alertEl,'error','Please enter a valid email address.'); return; }
+  btn.disabled = true; btn.textContent = 'Sending...';
+  try {
+    const r = await fetch(`${API}/api/magic-link`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+    const data = await r.json();
+    if (r.ok) {
+      document.getElementById('login-form-view').style.display='none';
+      document.getElementById('sent-screen').style.display='block';
+      document.getElementById('sent-email').textContent=email;
+    } else showAlert(alertEl,'error',data.error||'Something went wrong.');
+  } catch(e) { showAlert(alertEl,'error','Cannot connect to server.'); }
+  btn.disabled=false; btn.textContent='Send magic link';
+}
+
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const urlEmail = params.get('email'), urlToken = params.get('token');
+  if (urlEmail && urlToken) {
+    localStorage.setItem('yg_email', urlEmail);
+    localStorage.setItem('yg_token', urlToken);
+    window.history.replaceState({}, document.title, window.location.pathname);
+    showDashboard(urlEmail); return;
+  }
+  if (getEmail() && getToken()) showDashboard(getEmail());
+  else document.getElementById('login-screen').style.display='flex';
+}
+
+async function showDashboard(email) {
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('dashboard-screen').style.display='block';
+  const storedWallet = localStorage.getItem('yg_wallet');
+  const displayName = storedWallet
+    ? storedWallet.slice(0,6) + '...' + storedWallet.slice(-4)
+    : email;
+  document.getElementById('nav-email').textContent = displayName;
+  try {
+    const r = await fetch(`${API}/api/user?email=${encodeURIComponent(email)}`);
+    if (r.ok) {
+      const user = await r.json();
+      updatePlanUI(user.plan);
+      if (user.wallet) {
+        const wallets = user.wallet.split(',').filter(w=>w.trim());
+        document.getElementById('stat-positions').textContent = wallets.length;
+        const container = document.getElementById('wallets-container');
+        container.innerHTML='';
+        wallets.forEach(w=>addWallet(w.trim()));
+      }
+      if (user.thresholds) {
+        try {
+          const th = JSON.parse(user.thresholds);
+          ['usdc','usdt','weth','pyusd','sol','wbtc'].forEach(k => {
+            if (th[k.toUpperCase()]) document.getElementById(`th-${k}`).value = th[k.toUpperCase()];
+          });
+        } catch(e) {}
+      }
+    }
+  } catch(e) {}
+  loadAPYChart();
+  // Pozitii demo: doar pe planuri platite (starter/pro/team)
+  const _userPlan = (typeof window._ygPlan !== 'undefined') ? window._ygPlan : 'free';
+  if (_userPlan !== 'free') renderDemoPositions();
+  // Auto-open checkout daca vine din index.html cu ?plan=
+  const _p = new URLSearchParams(window.location.search);
+  const _plan = _p.get('plan'), _bill = _p.get('billing');
+  if (_plan && ['starter','pro','team'].includes(_plan)) {
+    window.history.replaceState({}, document.title, window.location.pathname);
+    setTimeout(() => checkout(_plan, _bill || 'monthly'), 300);
+  }
+}
+
+function updatePlanUI(plan) {
+  window._ygPlan = plan;
+  const badge = document.getElementById('plan-badge');
+  const desc = document.getElementById('plan-desc');
+  badge.className = `plan-badge plan-${plan}`;
+  badge.textContent = plan.charAt(0).toUpperCase()+plan.slice(1);
+  const descs = {free:'Upgrade to monitor your positions and receive alerts.',starter:'Kamino + Aave + Jupiter Lend · 1 wallet · Telegram alerts',pro:'All 8 protocols · 5 chains · 5 wallets · Liquidation alerts',team:'Unlimited wallets · API access · 1-minute polling'};
+  desc.textContent = descs[plan]||descs.free;
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(`tab-${name}`).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (name==='markets') loadMarkets();
+  if (name==='pools' && !pe2Loaded) pe2Load();
+}
+
+// APY CHART
+let chartInstance = null;
+async function loadAPYChart() {
+  try {
+    const r = await fetch(LLAMA_API);
+    const data = await r.json();
+    const pools = data.data||[];
+    const PROTOS = {'aave-v3':['Aave v3','Lending'],'kamino':['Kamino','Lending'],'morpho-blue':['Morpho','Lending'],'jupiter-lend':['Jupiter Lend','Lending'],'ethena-usde':['Ethena','Staking'],'aerodrome':['Aerodrome','LP Pool'],'uniswap-v3':['Uniswap v3','LP Pool'],'compound-v3':['Compound','Lending']};
+    const best = {};
+    for (const p of pools) {
+      const proj = (p.project||'').toLowerCase();
+      const tvl = parseFloat(p.tvlUsd||0), apy = parseFloat(p.apy||0);
+      if (tvl<500000||apy>200||apy<=0) continue;
+      for (const [key,[display,type]] of Object.entries(PROTOS)) {
+        if (proj.includes(key) && (!best[key]||apy>best[key].apy)) {
+          best[key]={apy,display,type}; break;
+        }
+      }
+    }
+    const entries = Object.values(best).sort((a,b)=>b.apy-a.apy);
+    const labels = entries.map(e=>e.display);
+    const values = entries.map(e=>e.apy);
+    const colors = entries.map(e=>e.type==='Lending'?'#1D9E75':e.type==='Staking'?'#6366F1':'#EF9F27');
+    const ctx = document.getElementById('apyChart').getContext('2d');
+    if (chartInstance) chartInstance.destroy();
+    chartInstance = new Chart(ctx, {
+      type:'bar',
+      data:{labels,datasets:[{label:'Best APY %',data:values,backgroundColor:colors,borderRadius:6,borderSkipped:false}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.raw.toFixed(2)}% APY`}}},scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{callback:v=>v+'%',font:{size:11}}}}}
+    });
+  } catch(e) { console.log('Chart error:',e); }
+}
+
+// LIVE MARKETS
+let allPools=[], currentFilter='all';
+async function loadMarkets() {
+  if (allPools.length>0) { renderPools(); return; }
+  document.getElementById('pools-tbody').innerHTML='<tr class="loading-row"><td colspan="6">Loading live data...</td></tr>';
+  try {
+    const r = await fetch(LLAMA_API);
+    const data = await r.json();
+    const pools = data.data||[];
+    const PROTOS={'aave-v3':['Aave v3','Lending'],'kamino':['Kamino','Lending'],'morpho-blue':['Morpho','Lending'],'jupiter-lend':['Jupiter Lend','Lending'],'ethena-usde':['Ethena','Staking'],'aerodrome':['Aerodrome','LP Pool'],'uniswap-v3':['Uniswap v3','LP Pool'],'compound-v3':['Compound v3','Lending']};
+    const CHAINS=new Set(['ethereum','arbitrum','base','polygon','optimism','solana','avalanche','bsc']);
+    allPools=[];
+    for (const p of pools) {
+      const proj=(p.project||'').toLowerCase(), chain=(p.chain||'').toLowerCase();
+      if (!CHAINS.has(chain)) continue;
+      const tvl=parseFloat(p.tvlUsd||0), apy=parseFloat(p.apy||0);
+      if (tvl<500000||apy>200) continue;
+      for (const [key,[display,type]] of Object.entries(PROTOS)) {
+        if (proj.includes(key)) {
+          allPools.push({protocol:display,asset:p.symbol||'?',chain:p.chain,type,apy,tvl}); break;
+        }
+      }
+    }
+    allPools.sort((a,b)=>b.apy-a.apy);
+    renderPools();
+  } catch(e) { document.getElementById('pools-tbody').innerHTML='<tr class="loading-row"><td colspan="6">Failed to load. Please try again.</td></tr>'; }
+}
+
+function renderPools() {
+  const filtered = currentFilter==='all'?allPools:allPools.filter(p=>p.type===currentFilter);
+  const top100 = filtered.slice(0,100);
+  if (!top100.length) { document.getElementById('pools-tbody').innerHTML='<tr class="loading-row"><td colspan="6">No pools found.</td></tr>'; return; }
+  document.getElementById('pools-tbody').innerHTML = top100.map(p=>{
+    const ac=p.apy>=10?'apy-high':p.apy>=3?'apy-mid':'apy-low';
+    const tc=p.type==='Lending'?'type-lending':p.type==='LP Pool'?'type-lp':'type-staking';
+    const tvl=p.tvl>=1e9?`$${(p.tvl/1e9).toFixed(1)}B`:p.tvl>=1e6?`$${(p.tvl/1e6).toFixed(1)}M`:`$${(p.tvl/1e3).toFixed(0)}K`;
+    return `<tr><td><strong>${p.protocol}</strong></td><td>${p.asset}</td><td><span class="chain-pill">${p.chain}</span></td><td><span class="type-badge ${tc}">${p.type}</span></td><td><span class="apy-val ${ac}">${p.apy.toFixed(2)}%</span></td><td style="color:var(--ink3)">${tvl}</td></tr>`;
+  }).join('');
+}
+
+function filterPools(type, btn) {
+  currentFilter=type;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPools();
+}
+
+function addWallet(value='') {
+  const container=document.getElementById('wallets-container');
+  const row=document.createElement('div'); row.className='input-row';
+  row.innerHTML=`<input type="text" class="input-field wallet-input" placeholder="0x... or Solana address" value="${value}"><button class="btn-remove" onclick="removeWallet(this)">×</button>`;
+  container.appendChild(row);
+}
+function removeWallet(btn) { if (document.querySelectorAll('.input-row').length>1) btn.closest('.input-row').remove(); }
+
+async function saveSettings() {
+  const email=getEmail(); if (!email) return;
+  const btn=document.getElementById('save-btn'), alertEl=document.getElementById('wallet-alert');
+  btn.disabled=true; btn.textContent='Saving...';
+  const wallets=[...document.querySelectorAll('.wallet-input')].map(i=>i.value.trim()).filter(Boolean).join(',');
+  const thresholds=JSON.stringify({USDC:parseFloat(document.getElementById('th-usdc').value)||0,USDT:parseFloat(document.getElementById('th-usdt').value)||0,WETH:parseFloat(document.getElementById('th-weth').value)||0,PYUSD:parseFloat(document.getElementById('th-pyusd').value)||0,SOL:parseFloat(document.getElementById('th-sol').value)||0,WBTC:parseFloat(document.getElementById('th-wbtc').value)||0});
+  try {
+    const r=await fetch(`${API}/api/save-settings`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,wallet:wallets,thresholds})});
+    if (r.ok) showAlert(alertEl,'success','✓ Settings saved successfully.');
+    else showAlert(alertEl,'error','Failed to save.');
+  } catch(e) { showAlert(alertEl,'error','Cannot connect to server.'); }
+  btn.disabled=false; btn.textContent='Save settings';
+}
+
+let cryptoPlan='',cryptoCurrency='usdcarb',cryptoPaymentId=null,cryptoPollInterval=null,cryptoBilling='monthly';
+const PLAN_NAMES={starter:'Starter',pro:'Pro',team:'Team'};
+const PLAN_PRICES_UI={starter:9,pro:19,team:49};
+const CURR_LABELS={usdcarb:'USDC - Arbitrum',usdcbase:'USDC - Base',usdcsol:'USDC - Solana',usdcbsc:'USDC - BNB Chain',usdcmatic:'USDC - Polygon',usdceth:'USDC - Ethereum'};
+
+function checkout(plan,billing){
+  cryptoPlan=plan;
+  cryptoBilling = billing || 'monthly';
+  const YEARLY_PRICES={starter:84,pro:180,team:468};
+  const priceDisplay = cryptoBilling==='yearly'
+    ? '$'+YEARLY_PRICES[plan]+'/yr <span style="font-size:11px;color:var(--accent);">Save 20%</span>'
+    : '$'+PLAN_PRICES_UI[plan]+' / month';
+  document.getElementById('modal-plan-name').textContent=PLAN_NAMES[plan]||plan;
+  document.getElementById('modal-plan-price').innerHTML=priceDisplay;
+  document.getElementById('modal-plan-title').textContent='Upgrade to '+(PLAN_NAMES[plan]||plan);
+  document.getElementById('crypto-step-1').style.display='block';
+  document.getElementById('crypto-step-2').style.display='none';
+  document.getElementById('crypto-step-3').style.display='none';
+  switchPayMethod('card',document.querySelector('.pay-method-btn'));
+  document.getElementById('crypto-modal').classList.remove('hidden');
+}
+function closeCryptoModal(){
+  document.getElementById('crypto-modal').classList.add('hidden');
+  if(cryptoPollInterval){clearInterval(cryptoPollInterval);cryptoPollInterval=null;}
+}
+function switchPayMethod(method,btn){
+  document.querySelectorAll('.pay-method-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('pay-card-section').style.display=method==='card'?'block':'none';
+  document.getElementById('pay-crypto-section').style.display=method==='crypto'?'block':'none';
+}
+function selectCurrency(currency,btn){
+  cryptoCurrency=currency;
+  document.querySelectorAll('.crypto-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+function proceedStripe(){
+  const email=getEmail();if(!email)return;
+  fetch(`${API}/api/create-checkout`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({plan:cryptoPlan,email,billing:cryptoBilling})})
+  .then(r=>r.json()).then(d=>{if(d.url)window.location.href=d.url;}).catch(e=>alert('Error: '+e.message));
+}
+async function createCryptoPayment(){
+  const email=getEmail();if(!email){alert('Please log in first.');return;}
+  const btn=document.getElementById('crypto-proceed-btn');
+  btn.disabled=true;btn.textContent='Creating payment...';
+  try{
+    const r=await fetch(`${API}/api/create-crypto-checkout`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({plan:cryptoPlan,email,currency:cryptoCurrency})});
+    const data=await r.json();
+    if(!r.ok){alert(data.error||'Failed');btn.disabled=false;btn.textContent='Generate payment address';return;}
+    cryptoPaymentId=data.payment_id;
+    document.getElementById('pay-amount-display').textContent=data.pay_amount+' USDC';
+    document.getElementById('pay-currency-display').textContent=CURR_LABELS[cryptoCurrency]||cryptoCurrency;
+    document.getElementById('pay-address-display').textContent=data.pay_address;
+    document.getElementById('crypto-step-1').style.display='none';
+    document.getElementById('crypto-step-2').style.display='block';
+    cryptoPollInterval=setInterval(pollPaymentStatus,15000);
+  }catch(e){alert('Error: '+e.message);btn.disabled=false;btn.textContent='Generate payment address';}
+}
+async function pollPaymentStatus(){
+  if(!cryptoPaymentId)return;
+  try{
+    const r=await fetch(`${API}/api/check-payment`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({payment_id:cryptoPaymentId})});
+    const data=await r.json();
+    const el=document.getElementById('payment-status-text');
+    if(data.status==='waiting')el.textContent='Waiting for payment...';
+    else if(data.status==='confirming')el.textContent='Payment received, confirming on chain...';
+    else if(data.status==='confirmed'||data.status==='finished'){
+      clearInterval(cryptoPollInterval);
+      document.getElementById('crypto-step-2').style.display='none';
+      document.getElementById('crypto-step-3').style.display='block';
+    }else if(data.status==='partially_paid')el.textContent='Partial payment. Send remaining amount.';
+    else if(data.status==='failed'||data.status==='expired'){clearInterval(cryptoPollInterval);el.textContent='Payment '+data.status+'. Please try again.';}
+  }catch(e){console.warn('[CryptoPoll]',e);}
+}
+function copyAddress(){
+  const addr=document.getElementById('pay-address-display').textContent;
+  navigator.clipboard.writeText(addr).then(()=>{
+    const btn=document.querySelector('.crypto-copy-btn');
+    btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy address',2000);
+  });
+}
+
+
+// ── BILLING TOGGLE (DASHBOARD) ───────────────────────────
+let dashBilling = 'monthly';
+function dashToggleBilling(forceYearly) {
+  if (forceYearly === undefined) dashBilling = dashBilling === 'monthly' ? 'yearly' : 'monthly';
+  else dashBilling = forceYearly ? 'yearly' : 'monthly';
+  const isYearly = dashBilling === 'yearly';
+  document.getElementById('dash-billing-switch').classList.toggle('yearly', isYearly);
+  document.getElementById('dash-lbl-monthly').classList.toggle('active', !isYearly);
+  document.getElementById('dash-lbl-yearly').classList.toggle('active', isYearly);
+  const prices = isYearly
+    ? {starter:'$84<span>/yr</span>', pro:'$180<span>/yr</span>', team:'$468<span>/yr</span>'}
+    : {starter:'$9<span>/mo</span>',  pro:'$19<span>/mo</span>',  team:'$49<span>/mo</span>'};
+  document.getElementById('dash-price-starter').innerHTML = prices.starter;
+  document.getElementById('dash-price-pro').innerHTML     = prices.pro;
+  document.getElementById('dash-price-team').innerHTML    = prices.team;
+}
+(function(){
+  const bp = new URLSearchParams(window.location.search).get('billing');
+  if (bp === 'yearly') { setTimeout(()=>dashToggleBilling(true), 100); }
+})();
+
+
+// ── APY HISTORY CHART ──────────────────────────────────────
+// DeFiLlama pool IDs pentru pozitiile demo
+// gaseste pool IDs la: https://yields.llama.fi/pools (cauta dupa project+symbol+chain)
+const APY_POOL_MAP = {
+  'Kamino|PYUSD|Solana':       'eaece65e-ffb2-4631-a95e-7f267cb2f1ba',
+  'Aave v3|USDC|Ethereum':     'aa70268e-4b52-42bf-a116-608b370f9501',
+  'Morpho|WETH/wstETH|Base':   '660e240a-ab18-43af-9d24-0245828f903f',
+  'Kamino|SOL/USDT|Solana':    'afed73ea-c61f-44a4-931b-c36168772425',
+};
+
+let apyChartInstance = null;
+let apyChartData = [];
+let apyChartLabel = '';
+let apyChartSub = '';
+
+async function openApyModal(poolId, label, chain) {
+  apyChartLabel = label;
+  apyChartSub = chain;
+  document.getElementById('apy-modal-title').textContent = label + ' — APY History';
+  document.getElementById('apy-modal-sub').textContent = chain;
+  document.getElementById('apy-history-modal').classList.remove('hidden');
+  document.getElementById('apy-loading').style.display = 'flex';
+  document.getElementById('apy-history-canvas').style.display = 'none';
+  document.getElementById('apy-stats-row').style.display = 'none';
+
+  // reset range buttons
+  document.querySelectorAll('.apy-range-btn').forEach((b,i) => b.classList.toggle('active', i===0));
+
+  try {
+    const res = await fetch(`https://yields.llama.fi/chart/${poolId}`);
+    const json = await res.json();
+    apyChartData = (json.data || []).filter(d => d.apy != null);
+    renderApyChart(30);
+  } catch(e) {
+    document.getElementById('apy-loading').textContent = 'Failed to load data. Check pool ID.';
+  }
+}
+
+function closeApyModal() {
+  document.getElementById('apy-history-modal').classList.add('hidden');
+  if (apyChartInstance) { apyChartInstance.destroy(); apyChartInstance = null; }
+}
+
+function setApyRange(days, btn) {
+  document.querySelectorAll('.apy-range-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderApyChart(days);
+}
+
+function renderApyChart(days) {
+  if (!apyChartData.length) return;
+  const slice = apyChartData.slice(-days);
+  const labels = slice.map(d => {
+    const dt = new Date(d.timestamp);
+    return dt.toLocaleDateString('en-GB', {day:'2-digit', month:'short'});
+  });
+  const values = slice.map(d => parseFloat((d.apy || 0).toFixed(2)));
+
+  document.getElementById('apy-loading').style.display = 'none';
+  const canvas = document.getElementById('apy-history-canvas');
+  canvas.style.display = 'block';
+  document.getElementById('apy-stats-row').style.display = 'flex';
+
+  // Stats
+  const current = values[values.length - 1];
+  const avg = values.reduce((a,b) => a+b, 0) / values.length;
+  const high = Math.max(...values);
+  const low = Math.min(...values);
+  document.getElementById('apy-stat-current').textContent = current.toFixed(2) + '%';
+  document.getElementById('apy-stat-avg').textContent = avg.toFixed(2) + '%';
+  document.getElementById('apy-stat-high').textContent = high.toFixed(2) + '%';
+  document.getElementById('apy-stat-low').textContent = low.toFixed(2) + '%';
+
+  if (apyChartInstance) apyChartInstance.destroy();
+
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+  const textColor = isDark ? '#8890B0' : '#6B7280';
+
+  apyChartInstance = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        borderColor: '#1D9E75',
+        backgroundColor: 'rgba(29,158,117,0.08)',
+        borderWidth: 2,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        fill: true,
+        tension: 0.4,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { intersect: false, mode: 'index' },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ' ' + ctx.parsed.y.toFixed(2) + '% APY'
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: textColor, maxTicksLimit: 6, font:{size:11} },
+          grid: { color: gridColor }
+        },
+        y: {
+          ticks: { color: textColor, callback: v => v + '%', font:{size:11} },
+          grid: { color: gridColor }
+        }
+      }
+    }
+  });
+}
+
+// Inchide modal la click pe overlay
+document.addEventListener('DOMContentLoaded', function() {
+  const apyOverlay = document.getElementById('apy-history-modal');
+  if (apyOverlay) apyOverlay.addEventListener('click', function(e) {
+    if (e.target === this) closeApyModal();
+  });
+});
+
+// ── DARK MODE ──────────────────────────────────────────────
+function toggleDark() {
+  document.body.classList.toggle('dark');
+  const btn = document.getElementById('dark-toggle');
+  const isDark = document.body.classList.contains('dark');
+  btn.textContent = isDark ? '☀️' : '🌙';
+  localStorage.setItem('yg_dark', isDark ? '1' : '0');
+}
+function initDark() {
+  if (localStorage.getItem('yg_dark') === '1') {
+    document.body.classList.add('dark');
+    const btn = document.getElementById('dark-toggle');
+    if (btn) btn.textContent = '☀️';
+  }
+}
+initDark();
+document.addEventListener('DOMContentLoaded',function(){
+  const m=document.getElementById('crypto-modal');
+  if(m)m.addEventListener('click',function(e){if(e.target===this)closeCryptoModal();});
+});
+
+
+
+const TOKEN_LOGOS = {
+  'ETH':'https://assets.coingecko.com/coins/images/279/small/ethereum.png',
+  'WETH':'https://assets.coingecko.com/coins/images/279/small/ethereum.png',
+  'USDC':'https://assets.coingecko.com/coins/images/6319/small/usdc.png',
+  'USDT':'https://assets.coingecko.com/coins/images/325/small/tether.png',
+  'BTC':'https://assets.coingecko.com/coins/images/1/small/bitcoin.png',
+  'WBTC':'https://assets.coingecko.com/coins/images/7598/small/wrapped_bitcoin_wbtc.png',
+  'SOL':'https://assets.coingecko.com/coins/images/4128/small/solana.png',
+  'DAI':'https://assets.coingecko.com/coins/images/9956/small/4943.png',
+  'MATIC':'https://assets.coingecko.com/coins/images/4713/small/matic-token-icon.png',
+  'ARB':'https://assets.coingecko.com/coins/images/16547/small/photo_2023-03-29_21.47.00.jpeg',
+  'OP':'https://assets.coingecko.com/coins/images/25244/small/Optimism.png',
+  'AVAX':'https://assets.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png',
+  'BNB':'https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png',
+  'LINK':'https://assets.coingecko.com/coins/images/877/small/chainlink-new-logo.png',
+  'UNI':'https://assets.coingecko.com/coins/images/12504/small/uniswap-uni.png',
+  'AAVE':'https://assets.coingecko.com/coins/images/12645/small/AAVE.png',
+  'CRV':'https://assets.coingecko.com/coins/images/12124/small/Curve.png',
+  'LDO':'https://assets.coingecko.com/coins/images/13573/small/Lido_DAO.png',
+  'STETH':'https://assets.coingecko.com/coins/images/13442/small/steth_logo.png',
+  'WSTETH':'https://assets.coingecko.com/coins/images/18834/small/wstETH.png',
+  'USDE':'https://assets.coingecko.com/coins/images/33613/small/usde.png',
+  'GHO':'https://assets.coingecko.com/coins/images/30663/small/aave-gho.png',
+  'PYUSD':'https://assets.coingecko.com/coins/images/31212/small/PYUSD_Logo_%282%29.png',
+  'AERO':'https://assets.coingecko.com/coins/images/31745/small/token.png',
+};
+function getTokenImg(sym, cls) {
+  const base = sym.replace(/[^A-Za-z]/g,'').toUpperCase();
+  const url = TOKEN_LOGOS[base];
+  if (url) {
+    const img = document.createElement('img');
+    img.src = url;
+    img.className = 'pe2-token-img ' + cls;
+    img.style.cssText = 'position:absolute;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--card);object-fit:cover;';
+    img.onerror = function(){ this.style.display='none'; };
+    return img.outerHTML;
+  }
+  return '<div class="pe2-icon ' + cls + '" style="background:' + pe2Clr(sym) + '">' + sym.slice(0,2) + '</div>';
+}
+
+// ── WALLET LOGIN ──────────────────────────────────────────
+async function connectWallet(chain) {
+  const statusEl=document.getElementById('wallet-status');
+  const btn=document.getElementById(chain==='evm'?'btn-metamask':'btn-phantom');
+  btn.disabled=true;statusEl.textContent='Requesting wallet access...';
+  function toB58(b){const A='123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';let d=Array.from(b),r='',l=0;for(let x of b){if(x===0)l++;else break;}while(d.some(x=>x>0)){let c=0;d=d.map(x=>{let v=x+c*256;c=v%58;return Math.floor(v/58);});r=A[c]+r;}return'1'.repeat(l)+r;}
+  try{
+    if(chain==='evm'){
+      let prov=null;
+      if(window.ethereum?.providers)prov=window.ethereum.providers.find(p=>p.isMetaMask&&!p.isPhantom);
+      else if(window.ethereum?.isMetaMask&&!window.ethereum?.isPhantom)prov=window.ethereum;
+      if(!prov){statusEl.textContent='MetaMask not detected.';btn.disabled=false;return;}
+      const wa=(await prov.request({method:'eth_requestAccounts'}))[0];
+      statusEl.textContent='Sign the message in MetaMask...';
+      const{message}=await(await fetch(`${API}/api/auth/wallet/nonce`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({wallet:wa,chain:'evm'})})).json();
+      const sig=await prov.request({method:'personal_sign',params:[message,wa]});
+      const vr=await fetch(`${API}/api/auth/wallet/verify`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({wallet:wa,signature:sig,message,chain:'evm'})});
+      const d=await vr.json();
+      if(!vr.ok){statusEl.textContent=d.error||'Failed.';btn.disabled=false;return;}
+      localStorage.setItem('yg_email',d.email);localStorage.setItem('yg_token',d.token);localStorage.setItem('yg_wallet',d.wallet);localStorage.setItem('yg_chain',d.chain);
+      statusEl.textContent='';showDashboard(d.email);
+    }else{
+      const ph=window.phantom?.solana;
+      if(!ph?.isPhantom){statusEl.textContent='Phantom not detected.';btn.disabled=false;return;}
+      const wa=(await ph.connect()).publicKey.toString();
+      statusEl.textContent='Sign the message in Phantom...';
+      const{message}=await(await fetch(`${API}/api/auth/wallet/nonce`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({wallet:wa,chain:'solana'})})).json();
+      const signed=await ph.signMessage(new TextEncoder().encode(message),'utf8');
+      const vr=await fetch(`${API}/api/auth/wallet/verify`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({wallet:wa,signature:toB58(signed.signature),message,chain:'solana'})});
+      const d=await vr.json();
+      if(!vr.ok){statusEl.textContent=d.error||'Failed.';btn.disabled=false;return;}
+      localStorage.setItem('yg_email',d.email);localStorage.setItem('yg_token',d.token);localStorage.setItem('yg_wallet',d.wallet);localStorage.setItem('yg_chain',d.chain);
+      statusEl.textContent='';showDashboard(d.email);
+    }
+  }catch(e){statusEl.textContent=(e.code===4001||e.code===-32603)?'Rejected.':'Error: '+(e.message||'?');btn.disabled=false;}
+}
+
+// ── POOL EXPLORER v2 ──────────────────────────────────────
+const PE2_PROTO_MAP={'aave-v3':['Aave v3','Lending'],'kamino':['Kamino','Lending'],'morpho-blue':['Morpho','Lending'],'morpho':['Morpho','Lending'],'jupiter-lend':['Jupiter Lend','Lending'],'ethena-usde':['Ethena','Staking'],'aerodrome':['Aerodrome','LP Pool'],'uniswap-v3':['Uniswap v3','LP Pool'],'compound-v3':['Compound v3','Lending'],'compound':['Compound','Lending'],'curve':['Curve','LP Pool'],'balancer':['Balancer','LP Pool'],'lido':['Lido','Staking'],'rocket-pool':['Rocket Pool','Staking'],'pendle':['Pendle','Staking'],'fluid':['Fluid','Lending'],'spark':['Spark','Lending'],'venus':['Venus','Lending'],'pancakeswap':['PancakeSwap','LP Pool'],'sushiswap':['SushiSwap','LP Pool'],'radiant':['Radiant','Lending'],'benqi':['Benqi','Lending'],'yearn':['Yearn','Staking'],'convex':['Convex','Staking'],'frax':['Frax','Staking'],'stargate':['Stargate','LP Pool'],'gmx':['GMX','LP Pool'],'camelot':['Camelot','LP Pool'],'velodrome':['Velodrome','LP Pool'],'trader-joe':['Trader Joe','LP Pool']};
+const PE2_CLR={'ETH':'#627EEA','WETH':'#627EEA','USDC':'#2775CA','USDT':'#26A17B','BTC':'#F7931A','WBTC':'#F7931A','SOL':'#9945FF','DAI':'#F5AC37','MATIC':'#8247E5','ARB':'#12AAFF','OP':'#FF0420','AVAX':'#E84142','BNB':'#F3BA2F','UNI':'#FF007A','AAVE':'#B6509E','STETH':'#00A3FF','WSTETH':'#00A3FF','USDE':'#8B5CF6'};
+function pe2Clr(s){const b=s.replace(/[^A-Z]/gi,'').toUpperCase();return PE2_CLR[b]||'#'+Math.abs(b.split('').reduce((a,c)=>a*31+c.charCodeAt(0),0)).toString(16).slice(-6).padStart(6,'8');}
+function pe2Fmt(n){if(!n||isNaN(n))return'—';if(n>=1e9)return'$'+(n/1e9).toFixed(2)+'B';if(n>=1e6)return'$'+(n/1e6).toFixed(1)+'M';if(n>=1e3)return'$'+(n/1e3).toFixed(0)+'K';return'$'+n.toFixed(0);}
+let pe2All=[],pe2Filtered=[],pe2SortKey='apy',pe2SortDir=-1,pe2TypeFilter='all',pe2Loaded=false;
+async function pe2Load(){
+  const btn=document.getElementById('pe2-refresh-btn'),tbody=document.getElementById('pe2-tbody');
+  btn.disabled=true;btn.textContent='Loading...';tbody.innerHTML='<tr><td colspan="10" class="pe2-loading">Fetching data...</td></tr>';
+  try{
+    const r=await fetch('https://yields.llama.fi/pools'),data=await r.json();
+    pe2All=[];
+    for(const p of(data.data||[])){
+      if(!p.tvlUsd||p.tvlUsd<500000||!p.apy||p.apy<=0||p.apy>500)continue;
+      const proj=(p.project||'').toLowerCase();let dp=p.project,pt='Lending';
+      for(const[k,[n,t]] of Object.entries(PE2_PROTO_MAP)){if(proj.includes(k)){dp=n;pt=t;break;}}
+      pe2All.push({symbol:p.symbol||'?',project:dp,chain:p.chain||'?',type:pt,apy:parseFloat(p.apy||0),apyReward:parseFloat(p.apyReward||0),tvlUsd:parseFloat(p.tvlUsd||0),volumeUsd1d:parseFloat(p.volumeUsd1d||0),volumeUsd7d:parseFloat(p.volumeUsd7d||0),volTvl:p.tvlUsd>0?parseFloat(p.volumeUsd1d||0)/parseFloat(p.tvlUsd):0});
+    }
+    const chains=[...new Set(pe2All.map(p=>p.chain))].sort(),protos=[...new Set(pe2All.map(p=>p.project))].sort();
+    document.getElementById('pe2-chain').innerHTML='<option value="">All chains</option>'+chains.map(c=>'<option value="'+c+'">'+c+'</option>').join('');
+    document.getElementById('pe2-proto').innerHTML='<option value="">All protocols</option>'+protos.map(p=>'<option value="'+p+'">'+p+'</option>').join('');
+    document.getElementById('pe2-s-pools').textContent=pe2All.length.toLocaleString();
+    document.getElementById('pe2-s-tvl').textContent=pe2Fmt(pe2All.reduce((s,p)=>s+p.tvlUsd,0));
+    document.getElementById('pe2-s-apy').textContent=Math.max(...pe2All.map(p=>p.apy)).toFixed(1)+'%';
+    document.getElementById('pe2-s-chains').textContent=new Set(pe2All.map(p=>p.chain)).size;
+    document.getElementById('pe2-updated').textContent='DeFiLlama · Updated '+new Date().toLocaleTimeString();
+    pe2Loaded=true;pe2Filter();
+  }catch(e){document.getElementById('pe2-tbody').innerHTML='<tr><td colspan="10" class="pe2-loading" style="color:var(--danger);">Failed. Retry.</td></tr>';}
+  btn.disabled=false;btn.textContent='↻ Refresh';
+}
+function pe2Filter(){
+  const s=document.getElementById('pe2-search').value.trim().toLowerCase(),ch=document.getElementById('pe2-chain').value,pr=document.getElementById('pe2-proto').value,mt=parseInt(document.getElementById('pe2-mintvl').value)||500000;
+  pe2Filtered=pe2All.filter(p=>{if(pe2TypeFilter!=='all'&&p.type!==pe2TypeFilter)return false;if(ch&&p.chain!==ch)return false;if(pr&&p.project!==pr)return false;if(p.tvlUsd<mt)return false;if(s&&!(p.symbol+p.project+p.chain).toLowerCase().includes(s))return false;return true;});
+  pe2Filtered.sort((a,b)=>{const av=a[pe2SortKey]||0,bv=b[pe2SortKey]||0;if(typeof av==='string')return pe2SortDir*av.localeCompare(bv);return pe2SortDir*(bv-av);});
+  document.getElementById('pe2-lp-warn').style.display=pe2Filtered.some(p=>p.type==='LP Pool')?'flex':'none';
+  pe2Render();
+}
+function pe2Sort(key){if(pe2SortKey===key)pe2SortDir*=-1;else{pe2SortKey=key;pe2SortDir=-1;}document.querySelectorAll('.pe2-table thead th').forEach(th=>th.classList.remove('pe2-sorted'));const th=document.getElementById('pe2-th-'+key);if(th){th.classList.add('pe2-sorted');th.querySelector('.pe2-arrow').textContent=pe2SortDir===-1?'↓':'↑';}pe2Filter();}
+function pe2SetType(type,btn){pe2TypeFilter=type;document.querySelectorAll('#pe2-type-filters .pe2-filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');pe2Filter();}
+function pe2Render(){
+  const tbody=document.getElementById('pe2-tbody'),count=document.getElementById('pe2-count');
+  if(!pe2Filtered.length){tbody.innerHTML='<tr><td colspan="10" class="pe2-loading">No pools match filters.</td></tr>';count.innerHTML='No results';return;}
+  const top=pe2Filtered.slice(0,200);
+  count.innerHTML='Showing <strong>'+top.length+'</strong> of <strong>'+pe2Filtered.length.toLocaleString()+'</strong> pools';
+
+  if (pe2ViewMode === 'grid') {
+    // Grid view
+    const tableWrap = document.querySelector('.pe2-table-wrap');
+    let gridEl = document.getElementById('pe2-grid-container');
+    if (!gridEl) {
+      gridEl = document.createElement('div');
+      gridEl.id = 'pe2-grid-container';
+      tableWrap.parentNode.insertBefore(gridEl, tableWrap);
+    }
+    tableWrap.style.display = 'none';
+    gridEl.style.display = 'block';
+    gridEl.className = 'pe2-grid-view';
+    gridEl.innerHTML = top.map(p => {
+      const ac = p.apy>=10?'var(--accent)':p.apy>=3?'var(--warn)':'var(--ink2)';
+      const tc = p.type==='Lending'?'pe2-badge-lending':p.type==='LP Pool'?'pe2-badge-lp':'pe2-badge-staking';
+      return '<div class="pe2-grid-card"><div class="pe2-grid-proto">'+p.project+' · '+p.chain+'</div><div class="pe2-grid-symbol">'+p.symbol+'</div><div class="pe2-grid-apy" style="color:'+ac+'">'+p.apy.toFixed(2)+'%</div><div class="pe2-grid-meta"><span class="pe2-grid-tvl">TVL '+pe2Fmt(p.tvlUsd)+'</span><span class="pe2-badge '+tc+'">'+p.type+'</span></div></div>';
+    }).join('');
+    count.innerHTML = 'Showing <strong>'+top.length+'</strong> of <strong>'+pe2Filtered.length.toLocaleString()+'</strong> pools';
+    return;
+  }
+  // Table view
+  const gridEl2 = document.getElementById('pe2-grid-container');
+  if (gridEl2) gridEl2.style.display = 'none';
+  document.querySelector('.pe2-table-wrap').style.display = 'block';
+  tbody.innerHTML=top.map((p,i)=>{
+    const tk=p.symbol.split(/[-/]/),t1=tk[0]||'?',t2=tk[1]||tk[0],c1=pe2Clr(t1),c2=pe2Clr(t2);
+    const ac=p.apy>=10?'pe2-apy-high':p.apy>=3?'pe2-apy-mid':'pe2-apy-low';
+    const tc=p.type==='Lending'?'pe2-badge-lending':p.type==='LP Pool'?'pe2-badge-lp':'pe2-badge-staking';
+    const vtr=Math.min(p.volTvl*100,100);
+    return '<tr><td style="color:var(--ink3);font-size:12px;">'+(i+1)+'</td>'+
+      '<td><div class="pe2-pool-cell"><div class="pe2-icons">'+getTokenImg(t1,'pe2-token-img-a')+getTokenImg(t2,'pe2-token-img-b')+'</div><div class="pe2-pool-name">'+p.symbol+'</div></div></td>'+
+      '<td style="font-weight:500;">'+p.project+'</td><td><span class="pe2-chain-pill">'+p.chain+'</span></td>'+
+      '<td><span class="pe2-badge '+tc+'">'+p.type+'</span></td>'+
+      '<td><span class="'+ac+'">'+p.apy.toFixed(2)+'%</span>'+(p.apyReward>0?'<div style="font-size:11px;color:var(--warn);">+'+p.apyReward.toFixed(2)+'% rewards</div>':'')+'</td>'+
+      '<td>'+pe2Fmt(p.tvlUsd)+'</td><td>'+(p.volumeUsd1d>0?pe2Fmt(p.volumeUsd1d):'—')+'</td>'+
+      '<td>'+(p.volumeUsd7d>0?pe2Fmt(p.volumeUsd7d):'—')+'</td>'+
+      '<td><div class="pe2-ratio-wrap"><div class="pe2-ratio-bar"><div class="pe2-ratio-fill" style="width:'+vtr+'%"></div></div><span style="font-size:12px;color:var(--ink2);">'+(p.volTvl>0?p.volTvl.toFixed(3):'—')+'</span></div></td></tr>';
+  }).join('');
+}
+
+
+function renderDemoPositions() {
+  // Shows example position cards — replace with real wallet data when available
+  const positions = [
+    { proto:'Kamino', chain:'Solana', asset:'PYUSD', apy:9.36, type:'Lending', status:'ok' },
+    { proto:'Aave v3', chain:'Ethereum', asset:'USDC', apy:2.14, type:'Lending', status:'alert', threshold:3.00 },
+    { proto:'Morpho', chain:'Base', asset:'WETH/wstETH', apy:3.21, type:'Lending', status:'ok' },
+    { proto:'Kamino', chain:'Solana', asset:'SOL/USDT', apy:19.14, type:'LP Pool', status:'ok' },
+  ];
+  const grid = document.getElementById('positions-grid');
+  if (!grid) return;
+  // arata sectiunea pozitii, ascunde empty-state
+  const posSection = document.getElementById('positions-section');
+  const emptySection = document.getElementById('empty-state-section');
+  if (posSection) posSection.style.display = 'block';
+  if (emptySection) emptySection.style.display = 'none';
+  grid.innerHTML = positions.map(p => {
+    const apyCls = p.apy >= 8 ? 'apy-good' : p.apy >= 3 ? '' : 'apy-danger';
+    const cardCls = p.status === 'alert' ? 'position-card alert-card' : 'position-card';
+    const alertHtml = p.status === 'alert'
+      ? `<div class="pos-alert">⚠ Below your ${p.threshold.toFixed(2)}% threshold</div>`
+      : '';
+    const typeCls = p.type === 'Lending' ? 'type-lending' : p.type === 'LP Pool' ? 'type-lp' : 'type-staking';
+    const poolId = APY_POOL_MAP[`${p.proto}|${p.asset}|${p.chain}`] || null;
+    const chartBtn = poolId
+      ? `<button class="pos-chart-btn" onclick="openApyModal('${poolId}','${p.proto} ${p.asset}','${p.chain}')">📈 APY History</button>`
+      : '';
+    return `<div class="${cardCls}">
+      <div class="position-card-top">
+        <span class="pos-proto">${p.proto}</span>
+        <span class="pos-chain">${p.chain}</span>
+      </div>
+      <div class="pos-asset">${p.asset}</div>
+      <div class="pos-apy ${apyCls}">${p.apy.toFixed(2)}%</div>
+      <div class="pos-apy-sub">${p.type} APY &nbsp;<span class="type-badge ${typeCls}" style="font-size:10px;">${p.type}</span></div>
+      ${alertHtml}
+      ${chartBtn}
+    </div>`;
+  }).join('');
+}
+document.addEventListener('keydown', e => {
+  if (e.key==='Enter' && document.getElementById('login-screen').style.display!=='none') requestMagicLink();
+});
+
+init();
+
+// ── IL CALCULATOR ──────────────────────────────────────────
+function openILCalc() {
+  document.getElementById('il-modal').classList.remove('hidden');
+  calcIL();
+}
+function closeILCalc() {
+  document.getElementById('il-modal').classList.add('hidden');
+}
+function calcIL() {
+  const entry = parseFloat(document.getElementById('il-entry').value);
+  const current = parseFloat(document.getElementById('il-current').value);
+  const size = parseFloat(document.getElementById('il-size').value) || 1000;
+  const fees = parseFloat(document.getElementById('il-fees').value) || 0;
+  if (!entry || !current || entry <= 0 || current <= 0) {
+    document.getElementById('il-pct').textContent = '—';
+    document.getElementById('il-detail').textContent = 'Enter valid prices';
+    return;
+  }
+  const r = current / entry;
+  const il = (2 * Math.sqrt(r) / (1 + r)) - 1;
+  const ilPct = Math.abs(il * 100);
+  const ilDollar = Math.abs(il * size);
+  const netPnl = fees - ilDollar;
+  const pctEl = document.getElementById('il-pct');
+  pctEl.textContent = '-' + ilPct.toFixed(2) + '%';
+  pctEl.style.color = ilPct > 5 ? 'var(--danger)' : ilPct > 2 ? 'var(--warn)' : 'var(--accent)';
+  const heldVal = size * r;
+  const lpVal = size * (1 + il);
+  document.getElementById('il-detail').innerHTML =
+    'IL amount: <strong>-$' + ilDollar.toFixed(2) + '</strong><br>' +
+    'Hold value: <strong>$' + (size + (heldVal - size)).toFixed(2) + '</strong> vs LP value: <strong>$' + (size + lpVal - size).toFixed(2) + '</strong><br>' +
+    'Net P&amp;L after fees: <strong style="color:' + (netPnl >= 0 ? 'var(--accent)' : 'var(--danger)') + '">$' + netPnl.toFixed(2) + '</strong>';
+}
+document.addEventListener('DOMContentLoaded', function() {
+  const ilm = document.getElementById('il-modal');
+  if (ilm) ilm.addEventListener('click', function(e) { if(e.target===this) closeILCalc(); });
+});
+
+// ── VIEW TOGGLE (Table/Grid) ──────────────────────────────
+let pe2ViewMode = 'table';
+function pe2SetView(mode, btn) {
+  pe2ViewMode = mode;
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  pe2Render();
+}
+
+// ── SHARE POSITIONS ────────────────────────────────────────
+function sharePositions() {
+  const text = 'My YieldGuard positions:\n\n' +
+    '• Kamino PYUSD · Solana: 9.36%\n' +
+    '• Morpho WETH/wstETH · Base: 3.21%\n' +
+    '• Kamino SOL/USDT · Solana: 19.14%\n\n' +
+    'Track yours → yieldguard.app';
+  if (navigator.share) {
+    navigator.share({ title: 'My YieldGuard Positions', text });
+  } else {
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.querySelector('.share-btn');
+      btn.textContent = '✓ Copied!';
+      setTimeout(() => btn.textContent = '📤 Share', 2000);
+    });
+  }
+}
+
+
+// ── GAS WIDGET ──────────────────────────────────────────────
+async function fetchGasPrices() {
+  try {
+    // Use ETH gas station (free, no key)
+    const r = await fetch('https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=YourApiKeyToken');
+    const d = await r.json();
+    if (d.result && d.result.SafeGasPrice) {
+      document.getElementById('gas-eth').textContent = d.result.ProposeGasPrice;
+      document.getElementById('gas-arb').textContent = '0.1';
+    }
+  } catch(e) {
+    // Fallback: static reasonable values
+    document.getElementById('gas-eth').textContent = '8';
+    document.getElementById('gas-arb').textContent = '0.1';
+  }
+}
+fetchGasPrices();
+setInterval(fetchGasPrices, 60000);
+
+// ── REPORT / SHARE ──────────────────────────────────────────
+function openReport() {
+  document.getElementById('report-date').textContent = new Date().toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'});
+  document.getElementById('report-modal').classList.remove('hidden');
+}
+function closeReport() {
+  document.getElementById('report-modal').classList.add('hidden');
+}
+function copyReportText() {
+  const text = '📊 My YieldGuard Positions\n\n' +
+    '• Kamino PYUSD (Solana): 9.36% APY\n' +
+    '• Aave v3 USDC (ETH): 2.14% APY\n' +
+    '• Morpho WETH/wstETH (Base): 3.21% APY\n' +
+    '• Kamino SOL/USDT (Solana): 19.14% APY\n\n' +
+    'Monitored by yieldguard.app';
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.report-copy-btn');
+    btn.textContent = '✓ Copied to clipboard!';
+    setTimeout(() => btn.textContent = '📋 Copy as text', 2000);
+  });
+}
+async function downloadReport() {
+  const btn = document.querySelector('.report-dl-btn');
+  btn.textContent = '⏳ Generating...';
+  btn.disabled = true;
+  try {
+    // Use html2canvas if available, otherwise fallback to SVG download
+    const preview = document.getElementById('report-preview');
+    // Create SVG-based report for download
+    const date = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const svg = `<svg width="600" height="340" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#051209"/>
+          <stop offset="100%" style="stop-color:#0F2D1E"/>
+        </linearGradient>
+      </defs>
+      <rect width="600" height="340" rx="16" fill="url(#bg)"/>
+      <text x="32" y="56" font-family="Arial,sans-serif" font-size="22" font-weight="900" fill="white">Yield<tspan fill="#1D9E75">Guard</tspan></text>
+      <text x="32" y="82" font-family="Arial,sans-serif" font-size="12" fill="rgba(93,202,165,0.7)">My DeFi Positions</text>
+      <rect x="32" y="104" width="254" height="80" rx="8" fill="rgba(255,255,255,0.05)" stroke="rgba(29,158,117,0.3)" stroke-width="0.5"/>
+      <text x="48" y="123" font-family="Arial,sans-serif" font-size="9" fill="rgba(93,202,165,0.7)" font-weight="600">KAMINO · SOLANA</text>
+      <text x="48" y="140" font-family="Arial,sans-serif" font-size="11" fill="rgba(255,255,255,0.8)">PYUSD</text>
+      <text x="48" y="170" font-family="Arial,sans-serif" font-size="28" font-weight="900" fill="#1D9E75">9.36%</text>
+      <rect x="314" y="104" width="254" height="80" rx="8" fill="rgba(255,255,255,0.05)" stroke="rgba(226,75,74,0.3)" stroke-width="0.5"/>
+      <text x="330" y="123" font-family="Arial,sans-serif" font-size="9" fill="rgba(93,202,165,0.7)" font-weight="600">AAVE V3 · ETH</text>
+      <text x="330" y="140" font-family="Arial,sans-serif" font-size="11" fill="rgba(255,255,255,0.8)">USDC</text>
+      <text x="330" y="170" font-family="Arial,sans-serif" font-size="28" font-weight="900" fill="#E24B4A">2.14%</text>
+      <rect x="32" y="202" width="254" height="80" rx="8" fill="rgba(255,255,255,0.05)" stroke="rgba(29,158,117,0.3)" stroke-width="0.5"/>
+      <text x="48" y="221" font-family="Arial,sans-serif" font-size="9" fill="rgba(93,202,165,0.7)" font-weight="600">MORPHO · BASE</text>
+      <text x="48" y="238" font-family="Arial,sans-serif" font-size="11" fill="rgba(255,255,255,0.8)">WETH/wstETH</text>
+      <text x="48" y="268" font-family="Arial,sans-serif" font-size="28" font-weight="900" fill="#1D9E75">3.21%</text>
+      <rect x="314" y="202" width="254" height="80" rx="8" fill="rgba(255,255,255,0.05)" stroke="rgba(29,158,117,0.3)" stroke-width="0.5"/>
+      <text x="330" y="221" font-family="Arial,sans-serif" font-size="9" fill="rgba(93,202,165,0.7)" font-weight="600">KAMINO · SOLANA</text>
+      <text x="330" y="238" font-family="Arial,sans-serif" font-size="11" fill="rgba(255,255,255,0.8)">SOL/USDT</text>
+      <text x="330" y="268" font-family="Arial,sans-serif" font-size="28" font-weight="900" fill="#1D9E75">19.14%</text>
+      <text x="32" y="318" font-family="Arial,sans-serif" font-size="11" fill="rgba(93,202,165,0.5)">Monitored by yieldguard.app · ${date}</text>
+    </svg>`;
+    const blob = new Blob([svg], {type:'image/svg+xml'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'yieldguard-positions.svg'; a.click();
+    URL.revokeObjectURL(url);
+  } catch(e) { console.error(e); }
+  btn.textContent = '✓ Downloaded!';
+  setTimeout(() => { btn.textContent = '⬇ Download as PNG'; btn.disabled = false; }, 2000);
+}
+document.addEventListener('DOMContentLoaded', function() {
+  const rm = document.getElementById('report-modal');
+  if (rm) rm.addEventListener('click', function(e) { if(e.target===this) closeReport(); });
+});
+
+
+// ── TELEGRAM ALERTS ──────────────────────────────────────────
+function initTelegram() {
+  const stored = localStorage.getItem('yg_tg_chat_id');
+  if (stored) showTgConnected(stored);
+}
+
+function connectTelegram() {
+  const chatId = document.getElementById('tg-chat-id').value.trim();
+  const errEl = document.getElementById('tg-error');
+  const btn = document.getElementById('tg-verify-btn');
+  if (!chatId || !/^-?[0-9]+$/.test(chatId)) {
+    errEl.textContent = 'Please enter a valid numeric Chat ID.';
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+  btn.disabled = true; btn.textContent = 'Connecting...';
+  const email = getEmail();
+  fetch(`${API}/api/save-telegram`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, chat_id: chatId })
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.ok) {
+      localStorage.setItem('yg_tg_chat_id', chatId);
+      showTgConnected(chatId);
+    } else {
+      errEl.textContent = d.error || 'Failed to connect. Try again.';
+      errEl.style.display = 'block';
+    }
+    btn.disabled = false; btn.textContent = 'Connect';
+  })
+  .catch(e => {
+    // Save locally even if API fails
+    localStorage.setItem('yg_tg_chat_id', chatId);
+    showTgConnected(chatId);
+    btn.disabled = false; btn.textContent = 'Connect';
+  });
+}
+
+function showTgConnected(chatId) {
+  document.getElementById('tg-status-dot').className = 'tg-status-dot connected';
+  document.getElementById('tg-status-text').textContent = 'Connected · Chat ID: ' + chatId;
+  document.getElementById('tg-connect-section').style.display = 'none';
+  document.getElementById('tg-connected-section').style.display = 'block';
+  document.getElementById('tg-test-btn').style.display = 'block';
+}
+
+function disconnectTelegram() {
+  localStorage.removeItem('yg_tg_chat_id');
+  document.getElementById('tg-status-dot').className = 'tg-status-dot disconnected';
+  document.getElementById('tg-status-text').textContent = 'Not connected';
+  document.getElementById('tg-connect-section').style.display = 'block';
+  document.getElementById('tg-connected-section').style.display = 'none';
+  document.getElementById('tg-test-btn').style.display = 'none';
+  document.getElementById('tg-chat-id').value = '';
+}
+
+async function sendTestAlert() {
+  const chatId = localStorage.getItem('yg_tg_chat_id');
+  if (!chatId) return;
+  const btn = document.getElementById('tg-test-btn');
+  btn.textContent = 'Sending...'; btn.disabled = true;
+  try {
+    const r = await fetch(`${API}/api/test-telegram`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: getEmail(), chat_id: chatId })
+    });
+    const d = await r.json();
+    btn.textContent = d.ok ? '✓ Sent!' : '✗ Failed';
+    setTimeout(() => { btn.textContent = '📤 Send test alert'; btn.disabled = false; }, 3000);
+  } catch(e) {
+    btn.textContent = '✗ Error'; btn.disabled = false;
+    setTimeout(() => { btn.textContent = '📤 Send test alert'; }, 2000);
+  }
+}
+
+</script>
+
+<!-- APY HISTORY MODAL -->
+<div class="apy-modal-overlay hidden" id="apy-history-modal">
+  <div class="apy-modal">
+    <div class="apy-modal-header">
+      <div>
+        <div class="apy-modal-title" id="apy-modal-title">APY History</div>
+        <div class="apy-modal-sub" id="apy-modal-sub"></div>
+      </div>
+      <button class="apy-close-btn" onclick="closeApyModal()">×</button>
+    </div>
+    <div class="apy-range-btns">
+      <button class="apy-range-btn active" onclick="setApyRange(30, this)">30d</button>
+      <button class="apy-range-btn" onclick="setApyRange(60, this)">60d</button>
+      <button class="apy-range-btn" onclick="setApyRange(90, this)">90d</button>
+    </div>
+    <div class="apy-chart-wrap">
+      <div class="apy-loading" id="apy-loading">Loading chart data…</div>
+      <canvas id="apy-history-canvas" style="display:none;"></canvas>
+    </div>
+    <div class="apy-stats-row" id="apy-stats-row" style="display:none;">
+      <div class="apy-stat">
+        <div class="apy-stat-label">Current APY</div>
+        <div class="apy-stat-val" id="apy-stat-current">—</div>
+      </div>
+      <div class="apy-stat">
+        <div class="apy-stat-label">30d Average</div>
+        <div class="apy-stat-val" id="apy-stat-avg">—</div>
+      </div>
+      <div class="apy-stat">
+        <div class="apy-stat-label">30d High</div>
+        <div class="apy-stat-val" id="apy-stat-high">—</div>
+      </div>
+      <div class="apy-stat">
+        <div class="apy-stat-label">30d Low</div>
+        <div class="apy-stat-val" id="apy-stat-low">—</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

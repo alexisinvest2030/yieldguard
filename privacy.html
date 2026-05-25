@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — YieldGuard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f0d;
+    --surface: #111a14;
+    --border: #1e2d22;
+    --accent: #2ecc71;
+    --accent-dim: #1a7a44;
+    --text: #e8f0ea;
+    --text-muted: #6b8a72;
+    --text-faint: #3a4f3e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* Subtle grid bg */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--text-faint) 1px, transparent 1px),
+      linear-gradient(90deg, var(--text-faint) 1px, transparent 1px);
+    background-size: 60px 60px;
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,15,13,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 48px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+
+  .logo-icon {
+    width: 28px;
+    height: 28px;
+    background: var(--accent);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+
+  .logo-text {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    color: var(--text);
+  }
+
+  nav a.back {
+    font-size: 13px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.05em;
+    transition: color 0.2s;
+  }
+  nav a.back:hover { color: var(--accent); }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 72px 32px 120px;
+  }
+
+  .doc-header {
+    margin-bottom: 56px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .doc-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(36px, 5vw, 52px);
+    font-weight: 400;
+    line-height: 1.15;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+
+  .doc-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .doc-meta span { display: flex; align-items: center; gap: 6px; }
+
+  /* TOC */
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent-dim);
+    border-radius: 8px;
+    padding: 24px 28px;
+    margin-bottom: 56px;
+  }
+
+  .toc-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .toc ol {
+    list-style: none;
+    counter-reset: toc;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 24px;
+  }
+
+  @media(max-width:600px){ .toc ol { grid-template-columns: 1fr; } }
+
+  .toc li {
+    counter-increment: toc;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .toc li::before {
+    content: counter(toc, decimal-leading-zero);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-faint);
+    min-width: 20px;
+  }
+
+  .toc a {
+    font-size: 13px;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .toc a:hover { color: var(--accent); }
+
+  /* Sections */
+  section {
+    margin-bottom: 52px;
+    scroll-margin-top: 80px;
+  }
+
+  h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--text);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  h2 .section-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    background: rgba(46,204,113,0.08);
+    border: 1px solid rgba(46,204,113,0.2);
+    border-radius: 4px;
+    padding: 2px 7px;
+    letter-spacing: 0.05em;
+  }
+
+  p {
+    font-size: 15px;
+    color: #c8d8ca;
+    margin-bottom: 16px;
+  }
+
+  ul, ol {
+    margin: 12px 0 20px 0;
+    padding-left: 0;
+    list-style: none;
+  }
+
+  ul li, ol li {
+    font-size: 15px;
+    color: #c8d8ca;
+    padding: 6px 0 6px 20px;
+    position: relative;
+    border-bottom: 1px solid var(--text-faint);
+  }
+  ul li:last-child, ol li:last-child { border-bottom: none; }
+
+  ul li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent-dim);
+    font-size: 12px;
+  }
+
+  ol { counter-reset: list; }
+  ol li { counter-increment: list; }
+  ol li::before {
+    content: counter(list) '.';
+    position: absolute;
+    left: 0;
+    color: var(--accent-dim);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    top: 8px;
+  }
+
+  strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .highlight-box {
+    background: rgba(46,204,113,0.04);
+    border: 1px solid rgba(46,204,113,0.15);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin: 20px 0;
+  }
+
+  .highlight-box p { margin-bottom: 0; color: var(--text-muted); font-size: 14px; }
+  .highlight-box strong { color: var(--accent); }
+
+  .contact-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px 32px;
+    margin-top: 16px;
+  }
+
+  .contact-block p { margin-bottom: 8px; font-size: 14px; }
+
+  .contact-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .contact-item:last-child { border-bottom: none; }
+
+  .contact-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    min-width: 80px;
+    letter-spacing: 0.06em;
+  }
+
+  .contact-value {
+    font-size: 14px;
+    color: var(--text);
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 48px 0;
+  }
+
+  footer {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid var(--border);
+    padding: 32px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  footer p {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-faint);
+    margin: 0;
+  }
+
+  footer nav { background: none; border: none; padding: 0; height: auto; position: static; backdrop-filter: none; }
+  footer nav a { font-size: 11px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">
+    <div class="logo-icon">⚡</div>
+    <span class="logo-text">YieldGuard</span>
+  </a>
+  <a href="/" class="back">← Back to app</a>
+</nav>
+
+<div class="container">
+
+  <div class="doc-header">
+    <div class="doc-label">Legal Document</div>
+    <h1>Privacy Policy</h1>
+    <div class="doc-meta">
+      <span>📅 Effective: May 16, 2026</span>
+      <span>🔄 Last updated: May 16, 2026</span>
+      <span>📍 Jurisdiction: EU (GDPR)</span>
+    </div>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Table of Contents</div>
+    <ol>
+      <li><a href="#s1">Who We Are</a></li>
+      <li><a href="#s2">Data We Collect</a></li>
+      <li><a href="#s3">How We Use Your Data</a></li>
+      <li><a href="#s4">Legal Basis (GDPR)</a></li>
+      <li><a href="#s5">Data Storage & Security</a></li>
+      <li><a href="#s6">Third-Party Services</a></li>
+      <li><a href="#s7">Your Rights</a></li>
+      <li><a href="#s8">Cookies</a></li>
+      <li><a href="#s9">Children's Privacy</a></li>
+      <li><a href="#s10">Changes to This Policy</a></li>
+      <li><a href="#s11">Contact</a></li>
+    </ol>
+  </div>
+
+  <div class="highlight-box">
+    <p><strong>Plain-language summary:</strong> YieldGuard collects your email to provide the service. We do not sell your data. We store the minimum information needed to operate. You have full rights under GDPR to access, correct, or delete your data.</p>
+  </div>
+
+  <!-- 1 -->
+  <section id="s1">
+    <h2><span class="section-num">01</span> Who We Are</h2>
+    <p>YieldGuard ("we", "us", "our") is a DeFi yield monitoring service accessible at <strong>yieldguard.app</strong>. The service is operated by an individual developer based in Romania, European Union.</p>
+    <p>As an EU-based operator, we are subject to the General Data Protection Regulation (<strong>GDPR — Regulation (EU) 2016/679</strong>) and all applicable Romanian data protection law.</p>
+    <p>Contact for data matters: <a href="mailto:privacy@yieldguard.app">privacy@yieldguard.app</a></p>
+  </section>
+
+  <!-- 2 -->
+  <section id="s2">
+    <h2><span class="section-num">02</span> Data We Collect</h2>
+
+    <p><strong>Data you provide directly:</strong></p>
+    <ul>
+      <li><strong>Email address</strong> — required for account creation and magic link authentication</li>
+      <li><strong>Google account name and email</strong> — only if you choose Google OAuth login</li>
+      <li><strong>Alert preferences</strong> — Telegram chat ID and alert thresholds you configure</li>
+      <li><strong>Payment data</strong> — if you subscribe to a paid plan, payment is processed by Stripe. We do not store card numbers or banking details on our servers.</li>
+    </ul>
+
+    <p><strong>Data collected automatically:</strong></p>
+    <ul>
+      <li><strong>Login timestamps</strong> — date and time of authentication events</li>
+      <li><strong>IP address</strong> — logged by our server infrastructure (Hetzner VPS) for security purposes</li>
+      <li><strong>Basic usage data</strong> — which features are accessed, stored in server logs</li>
+    </ul>
+
+    <p><strong>Data we do NOT collect:</strong></p>
+    <ul>
+      <li>Wallet addresses or on-chain transaction history</li>
+      <li>Precise device fingerprinting</li>
+      <li>Behavioral tracking for advertising</li>
+    </ul>
+  </section>
+
+  <!-- 3 -->
+  <section id="s3">
+    <h2><span class="section-num">03</span> How We Use Your Data</h2>
+    <ul>
+      <li><strong>Authentication</strong> — sending magic links and verifying Google OAuth tokens</li>
+      <li><strong>Service delivery</strong> — displaying your personalized dashboard, storing alert settings</li>
+      <li><strong>Alerts</strong> — forwarding yield opportunity notifications to your configured Telegram</li>
+      <li><strong>Billing</strong> — managing subscription status via Stripe; your email is shared with Stripe for invoice purposes</li>
+      <li><strong>Security</strong> — detecting abuse, unauthorized access, and rate-limiting requests</li>
+      <li><strong>Transactional email</strong> — sending magic link emails from <em>noreply@yieldguard.app</em> via Resend</li>
+    </ul>
+    <p>We do <strong>not</strong> use your data for advertising, behavioral profiling, or sale to third parties.</p>
+  </section>
+
+  <!-- 4 -->
+  <section id="s4">
+    <h2><span class="section-num">04</span> Legal Basis (GDPR Art. 6)</h2>
+    <ul>
+      <li><strong>Art. 6(1)(b) — Contract performance:</strong> processing your email and preferences is necessary to provide the service you signed up for</li>
+      <li><strong>Art. 6(1)(c) — Legal obligation:</strong> retaining billing records as required by Romanian fiscal law (minimum 5 years for invoices)</li>
+      <li><strong>Art. 6(1)(f) — Legitimate interest:</strong> server logs and IP retention for security and abuse prevention (retained max 30 days)</li>
+    </ul>
+  </section>
+
+  <!-- 5 -->
+  <section id="s5">
+    <h2><span class="section-num">05</span> Data Storage & Security</h2>
+    <p>User data is stored in a <strong>SQLite database</strong> on a Hetzner VPS located in <strong>Germany (EU)</strong>. The server runs Ubuntu with access restricted by SSH key authentication.</p>
+    <p>Specific measures in place:</p>
+    <ul>
+      <li>HTTPS enforced on all endpoints (Caddy reverse proxy with automatic TLS)</li>
+      <li>Database not exposed to public internet</li>
+      <li>Magic link tokens are single-use and expire after 15 minutes</li>
+      <li>Passwords are not stored — authentication is passwordless</li>
+    </ul>
+    <p>No system is 100% secure. In the event of a data breach affecting your personal data, we will notify you and the relevant supervisory authority (ANSPDCP — Romanian DPA) within <strong>72 hours</strong> as required by GDPR Art. 33.</p>
+  </section>
+
+  <!-- 6 -->
+  <section id="s6">
+    <h2><span class="section-num">06</span> Third-Party Services</h2>
+    <ul>
+      <li><strong>Resend</strong> (resend.com) — transactional email delivery. Receives your email address to send magic links. Privacy policy: resend.com/privacy</li>
+      <li><strong>Google OAuth</strong> (Google LLC) — optional login method. Subject to Google's Privacy Policy. We receive only your email and display name.</li>
+      <li><strong>Stripe</strong> (Stripe Inc.) — payment processing for paid plans. We share your email with Stripe; card data never touches our servers. Stripe is PCI-DSS Level 1 certified. Privacy policy: stripe.com/privacy</li>
+      <li><strong>Telegram</strong> (Telegram Messenger Inc.) — alert delivery. You provide your own chat ID; we send notifications to your Telegram bot.</li>
+      <li><strong>DeFiLlama</strong> (open-source) — public API used to fetch APY data. No personal data is shared with DeFiLlama.</li>
+      <li><strong>Cloudflare Pages</strong> — frontend hosting. Cloudflare may log request metadata per their privacy policy: cloudflare.com/privacypolicy</li>
+    </ul>
+    <p>All third-party processors used by YieldGuard are either EU-based or covered by Standard Contractual Clauses (SCCs) for GDPR compliance.</p>
+  </section>
+
+  <!-- 7 -->
+  <section id="s7">
+    <h2><span class="section-num">07</span> Your Rights Under GDPR</h2>
+    <p>As an EU/EEA resident, you have the following rights (GDPR Chapter III):</p>
+    <ul>
+      <li><strong>Art. 15 — Access:</strong> request a copy of all personal data we hold about you</li>
+      <li><strong>Art. 16 — Rectification:</strong> correct inaccurate data</li>
+      <li><strong>Art. 17 — Erasure ("right to be forgotten"):</strong> request deletion of your account and all associated data</li>
+      <li><strong>Art. 18 — Restriction:</strong> request that we limit processing of your data</li>
+      <li><strong>Art. 20 — Portability:</strong> receive your data in a machine-readable format (JSON)</li>
+      <li><strong>Art. 21 — Object:</strong> object to processing based on legitimate interest</li>
+    </ul>
+    <p>To exercise any right, email <a href="mailto:privacy@yieldguard.app">privacy@yieldguard.app</a>. We will respond within <strong>30 days</strong> as required by GDPR Art. 12(3).</p>
+    <p>You also have the right to lodge a complaint with the Romanian supervisory authority: <strong>ANSPDCP</strong> (<a href="https://www.dataprotection.ro" target="_blank">dataprotection.ro</a>).</p>
+  </section>
+
+  <!-- 8 -->
+  <section id="s8">
+    <h2><span class="section-num">08</span> Cookies</h2>
+    <p>YieldGuard uses <strong>only strictly necessary cookies</strong> and browser <code>localStorage</code>:</p>
+    <ul>
+      <li><strong>Session token</strong> — stored in localStorage, identifies your login session. No expiry set; cleared on logout.</li>
+      <li><strong>No analytics cookies</strong> — we do not use Google Analytics, Hotjar, or any behavioral tracking cookies</li>
+      <li><strong>No advertising cookies</strong></li>
+    </ul>
+    <p>Because we use only strictly necessary cookies, no cookie consent banner is required under EU ePrivacy Directive (Directive 2002/58/EC as amended).</p>
+  </section>
+
+  <!-- 9 -->
+  <section id="s9">
+    <h2><span class="section-num">09</span> Children's Privacy</h2>
+    <p>YieldGuard is not directed at individuals under the age of <strong>18</strong>. We do not knowingly collect personal data from minors. If you believe a minor has created an account, contact us at <a href="mailto:privacy@yieldguard.app">privacy@yieldguard.app</a> and we will delete the account.</p>
+  </section>
+
+  <!-- 10 -->
+  <section id="s10">
+    <h2><span class="section-num">10</span> Changes to This Policy</h2>
+    <p>We may update this policy when we add new features, integrate new third parties, or when legal requirements change. Material changes will be communicated by email to registered users at least <strong>14 days</strong> before they take effect.</p>
+    <p>The "Last updated" date at the top of this document reflects the most recent revision. The previous version is available on request.</p>
+  </section>
+
+  <!-- 11 -->
+  <section id="s11">
+    <h2><span class="section-num">11</span> Contact</h2>
+    <div class="contact-block">
+      <div class="contact-item">
+        <span class="contact-label">Service</span>
+        <span class="contact-value">YieldGuard (yieldguard.app)</span>
+      </div>
+      <div class="contact-item">
+        <span class="contact-label">Country</span>
+        <span class="contact-value">Romania, European Union</span>
+      </div>
+      <div class="contact-item">
+        <span class="contact-label">Privacy</span>
+        <span class="contact-value"><a href="mailto:privacy@yieldguard.app">privacy@yieldguard.app</a></span>
+      </div>
+      <div class="contact-item">
+        <span class="contact-label">Support</span>
+        <span class="contact-value"><a href="mailto:support@yieldguard.app">support@yieldguard.app</a></span>
+      </div>
+      <div class="contact-item">
+        <span class="contact-label">DPA</span>
+        <span class="contact-value">ANSPDCP — <a href="https://www.dataprotection.ro" target="_blank">dataprotection.ro</a></span>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <p>© 2026 YieldGuard. All rights reserved.</p>
+  <nav>
+    <a href="/privacy-policy.html" style="color: var(--accent);">Privacy Policy</a>
+    &nbsp;&nbsp;
+    <a href="/terms-of-service.html" class="back">Terms of Service</a>
+  </nav>
+</footer>
+
+</body>
+</html>
