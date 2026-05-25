@@ -560,6 +560,21 @@
   .pos-pnl.pos-pnl-down { color:#E24B4A; }
   .pos-value { font-size:12px; color:var(--ink3); margin-top:2px; }
 
+
+  /* PORTFOLIO SUMMARY */
+  .portfolio-summary { background:var(--card); border:0.5px solid var(--border); border-radius:var(--radius); padding:20px 24px; margin-bottom:16px; display:none; }
+  .portfolio-summary-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+  .portfolio-summary-title { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; color:var(--ink3); text-transform:uppercase; letter-spacing:0.5px; }
+  .portfolio-summary-updated { font-size:11px; color:var(--ink3); }
+  .portfolio-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+  @media(max-width:600px){ .portfolio-stats { grid-template-columns:repeat(2,1fr); } }
+  .portfolio-stat { }
+  .portfolio-stat-label { font-size:11px; color:var(--ink3); margin-bottom:3px; }
+  .portfolio-stat-val { font-family:'Syne',sans-serif; font-size:20px; font-weight:800; letter-spacing:-0.5px; }
+  .portfolio-stat-val.pnl-up { color:#1D9E75; }
+  .portfolio-stat-val.pnl-down { color:#E24B4A; }
+  .portfolio-stat-sub { font-size:11px; color:var(--ink3); margin-top:2px; }
+
 </style>
 </head>
 <body>
@@ -792,6 +807,36 @@
         <div class="section-title">Top APY Opportunities Today</div>
         <div class="section-sub">Best yields per protocol — green = Lending, orange = LP Pool, blue = Staking.</div>
         <div class="chart-wrap"><canvas id="apyChart"></canvas></div>
+      </div>
+
+      <!-- Portfolio Summary -->
+      <div class="portfolio-summary" id="portfolio-summary">
+        <div class="portfolio-summary-header">
+          <span class="portfolio-summary-title">Portfolio Overview</span>
+          <span class="portfolio-summary-updated" id="portfolio-updated"></span>
+        </div>
+        <div class="portfolio-stats">
+          <div class="portfolio-stat">
+            <div class="portfolio-stat-label">Total Value</div>
+            <div class="portfolio-stat-val" id="ps-value">—</div>
+            <div class="portfolio-stat-sub">across positions</div>
+          </div>
+          <div class="portfolio-stat">
+            <div class="portfolio-stat-label">Total PnL</div>
+            <div class="portfolio-stat-val" id="ps-pnl">—</div>
+            <div class="portfolio-stat-sub" id="ps-pnl-pct"></div>
+          </div>
+          <div class="portfolio-stat">
+            <div class="portfolio-stat-label">Avg APY</div>
+            <div class="portfolio-stat-val" id="ps-apy">—</div>
+            <div class="portfolio-stat-sub">weighted</div>
+          </div>
+          <div class="portfolio-stat">
+            <div class="portfolio-stat-label">Positions</div>
+            <div class="portfolio-stat-val" id="ps-count">—</div>
+            <div class="portfolio-stat-sub">active</div>
+          </div>
+        </div>
       </div>
 
       <!-- Active Positions / Empty state -->
@@ -1547,6 +1592,23 @@ async function loadRealPositions() {
         const protoEl = card.querySelector('.pos-proto');
         if (protoEl && !protoEl.querySelector('.real-pos-badge')) {
           protoEl.innerHTML += '<span class="real-pos-badge">LIVE</span>';
+        }
+
+        // Update portfolio summary
+        const summaryEl = document.getElementById('portfolio-summary');
+        if (summaryEl) {
+          summaryEl.style.display = 'block';
+          document.getElementById('ps-value').textContent = '$' + Number(valueUsd).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+          const pnlEl2 = document.getElementById('ps-pnl');
+          pnlEl2.textContent = (pnlUsd >= 0 ? '+$' : '-$') + Math.abs(pnlUsd);
+          pnlEl2.className = 'portfolio-stat-val ' + (pnlUsd >= 0 ? 'pnl-up' : 'pnl-down');
+          const costBasis = parseFloat(pnl?.totalCostBasis?.usd || valueUsd);
+          const pnlPct = costBasis > 0 ? ((pnlUsd / costBasis) * 100).toFixed(2) : '0.00';
+          document.getElementById('ps-pnl-pct').textContent = (pnlUsd >= 0 ? '+' : '') + pnlPct + '% since deposit';
+          document.getElementById('ps-apy').textContent = apy7d + '%';
+          document.getElementById('ps-count').textContent = positions.length + ' vault' + (positions.length > 1 ? 's' : '');
+          const now = new Date();
+          document.getElementById('portfolio-updated').textContent = 'Updated ' + now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
         }
       }
     });
