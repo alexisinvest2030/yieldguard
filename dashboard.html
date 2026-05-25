@@ -552,6 +552,22 @@
   .pos-chart-btn { margin-top:8px;width:100%;font-size:12px;font-family:inherit;padding:6px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:transparent;color:var(--ink3);cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:5px; }
   .pos-chart-btn:hover { border-color:var(--accent);color:var(--accent); }
 
+
+  /* HEALTH FACTOR */
+  .hf-wrap { margin-top:10px; }
+  .hf-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:5px; }
+  .hf-label { font-size:11px; color:var(--ink3); }
+  .hf-value { font-size:13px; font-weight:700; font-family:'Syne',sans-serif; }
+  .hf-value.hf-safe { color:#1D9E75; }
+  .hf-value.hf-warn { color:#F59E0B; }
+  .hf-value.hf-danger { color:#E24B4A; }
+  .hf-bar-bg { height:6px; border-radius:99px; background:var(--border2); overflow:hidden; }
+  .hf-bar-fill { height:100%; border-radius:99px; transition:width .4s ease; }
+  .hf-bar-fill.hf-safe { background:#1D9E75; }
+  .hf-bar-fill.hf-warn { background:#F59E0B; }
+  .hf-bar-fill.hf-danger { background:#E24B4A; }
+  .hf-loading { font-size:11px; color:var(--ink3); margin-top:8px; }
+
 </style>
 </head>
 <body>
@@ -1108,7 +1124,15 @@ async function showDashboard(email) {
   loadAPYChart();
   // Pozitii demo: doar pe planuri platite (starter/pro/team)
   const _userPlan = (typeof window._ygPlan !== 'undefined') ? window._ygPlan : 'free';
-  if (_userPlan !== 'free') renderDemoPositions();
+  if (_userPlan !== 'free') {
+    renderDemoPositions();
+    // Fetch HF dupa ce cardul e randat
+    // Citeste walletele din inputs
+    const walletInputs = Array.from(document.querySelectorAll('#wallets-container input[type=text]')).map(i=>i.value.trim()).filter(Boolean);
+    const storedWallet = localStorage.getItem('yg_wallet') || '';
+    const allWallets = [...new Set([...walletInputs, ...storedWallet.split(',').map(w=>w.trim()).filter(Boolean)])];
+    setTimeout(() => loadHealthFactors(allWallets), 800);
+  }
   // Auto-open checkout daca vine din index.html cu ?plan=
   const _p = new URLSearchParams(window.location.search);
   const _plan = _p.get('plan'), _bill = _p.get('billing');
@@ -1472,6 +1496,76 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
+
+// ── HEALTH FACTOR ──────────────────────────────────────────
+async function loadHealthFactors(wallets) {
+  // Extrage adresele ETH din lista de wallets
+  const ethWallets = wallets.filter(w => w.startsWith('0x') && w.length === 42);
+  if (!ethWallets.length) return;
+
+  for (const wallet of ethWallets) {
+    try {
+      // Aave v3 Ethereum subgraph
+      const query = `{
+        users(where: {id: "${wallet.toLowerCase()}"}) {
+          healthFactor
+          totalCollateralUSD
+          totalDebtUSD
+        }
+      }`;
+
+      const res = await fetch('https://api.thegraph.com/subgraphs/name/aave/protocol-v3', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query })
+      });
+
+      const data = await res.json();
+      const user = data?.data?.users?.[0];
+
+      const hfEl = document.getElementById('hf-aave-v3-ethereum');
+      if (!hfEl) continue;
+
+      if (!user || !user.healthFactor) {
+        hfEl.innerHTML = '<div class="hf-loading">No Aave position found</div>';
+        continue;
+      }
+
+      const hf = parseFloat(user.healthFactor) / 1e18;
+      const hfCls = hf >= 2 ? 'hf-safe' : hf >= 1.3 ? 'hf-warn' : 'hf-danger';
+      const barPct = Math.min(hf / 3 * 100, 100).toFixed(1);
+      const collateral = parseFloat(user.totalCollateralUSD).toFixed(0);
+      const debt = parseFloat(user.totalDebtUSD).toFixed(0);
+
+      hfEl.innerHTML = `
+        <div class="hf-wrap">
+          <div class="hf-header">
+            <span class="hf-label">Health Factor</span>
+            <span class="hf-value ${hfCls}">${hf.toFixed(2)}</span>
+          </div>
+          <div class="hf-bar-bg">
+            <div class="hf-bar-fill ${hfCls}" style="width:${barPct}%"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:4px;">
+            <span style="font-size:10px;color:var(--ink3);">Collateral: $${Number(collateral).toLocaleString()}</span>
+            <span style="font-size:10px;color:var(--ink3);">Debt: $${Number(debt).toLocaleString()}</span>
+          </div>
+        </div>`;
+
+      // Alerta daca HF < 1.5
+      if (hf < 1.5) {
+        const card = hfEl.closest('.position-card');
+        if (card) card.classList.add('alert-card');
+      }
+
+    } catch(e) {
+      console.log('[HF] fetch error:', e);
+      const hfEl = document.getElementById('hf-aave-v3-ethereum');
+      if (hfEl) hfEl.innerHTML = '<div class="hf-loading">HF unavailable</div>';
+    }
+  }
+}
+
 // ── DARK MODE ──────────────────────────────────────────────
 function toggleDark() {
   document.body.classList.toggle('dark');
@@ -1684,6 +1778,11 @@ function renderDemoPositions() {
     const chartBtn = poolId
       ? `<button class="pos-chart-btn" onclick="openApyModal('${poolId}','${p.proto} ${p.asset}','${p.chain}')">📈 APY History</button>`
       : '';
+    const hfHtml = (p.proto === 'Aave v3' || p.proto === 'Morpho')
+      ? `<div class="hf-wrap" id="hf-${p.proto.replace(/\s/g,'-').toLowerCase()}-${p.chain.toLowerCase()}">
+           <div class="hf-loading">Loading Health Factor...</div>
+         </div>`
+      : '';
     return `<div class="${cardCls}">
       <div class="position-card-top">
         <span class="pos-proto">${p.proto}</span>
@@ -1693,6 +1792,7 @@ function renderDemoPositions() {
       <div class="pos-apy ${apyCls}">${p.apy.toFixed(2)}%</div>
       <div class="pos-apy-sub">${p.type} APY &nbsp;<span class="type-badge ${typeCls}" style="font-size:10px;">${p.type}</span></div>
       ${alertHtml}
+      ${hfHtml}
       ${chartBtn}
     </div>`;
   }).join('');
