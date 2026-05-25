@@ -761,6 +761,7 @@
 
   <div class="dash-tabs">
     <button class="tab-btn active" onclick="switchTab('overview',this)">Overview</button>
+    <button class="tab-btn" onclick="switchTab('portfolio',this)">Portfolio</button>
     <button class="tab-btn" onclick="switchTab('markets',this)">Live Markets</button>
     <button class="tab-btn" onclick="switchTab('alerts',this)">Alert Settings</button>
     <button class="tab-btn" onclick="switchTab('pools',this)">Pool Explorer</button>
@@ -779,7 +780,7 @@
           </div>
           <div class="plan-desc" id="plan-desc">Upgrade to monitor your positions and receive alerts.</div>
         </div>
-        <button class="btn-sm btn-accent" onclick="switchTab('upgrade', document.querySelectorAll('.tab-btn')[4])">Upgrade plan</button>
+        <button class="btn-sm btn-accent" onclick="switchTab('upgrade', document.querySelectorAll('.tab-btn')[5])">Upgrade plan</button>
       </div>
 
       <div class="stats-row">
@@ -809,11 +810,21 @@
         <div class="chart-wrap"><canvas id="apyChart"></canvas></div>
       </div>
 
-      <!-- Portfolio Summary -->
-      <div class="portfolio-summary" id="portfolio-summary">
+      <!-- Link catre Portfolio tab -->
+      <div style="margin-top:16px;text-align:center;">
+        <button class="btn-sm btn-accent" onclick="switchTab('portfolio', document.querySelectorAll('.tab-btn')[1])" style="padding:10px 24px;font-size:13px;">
+          📊 View My Portfolio →
+        </button>
+      </div>
+    </div>
+
+    <!-- LIVE MARKETS -->
+    <!-- PORTFOLIO TAB -->
+    <div id="tab-portfolio" class="tab-content">
+      <div class="portfolio-summary" id="portfolio-summary" style="display:block;">
         <div class="portfolio-summary-header">
           <span class="portfolio-summary-title">Portfolio Overview</span>
-          <span class="portfolio-summary-updated" id="portfolio-updated"></span>
+          <span class="portfolio-summary-updated" id="portfolio-updated">Loading...</span>
         </div>
         <div class="portfolio-stats">
           <div class="portfolio-stat">
@@ -839,9 +850,11 @@
         </div>
       </div>
 
-      <!-- Active Positions / Empty state -->
-      <div class="section" id="positions-section" style="display:none;">
-        <div style="display:flex;align-items:center;justify-content:space-between;"><div class="section-title">Your Active Positions</div><button class="share-btn" onclick="openReport()">📤 Share</button></div>
+      <div class="section" id="positions-section">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div class="section-title">Your Active Positions</div>
+          <button class="share-btn" onclick="openReport()">📤 Share</button>
+        </div>
         <div class="section-sub" id="positions-sub">Wallet positions detected across monitored protocols.</div>
         <div class="positions-grid" id="positions-grid"></div>
       </div>
@@ -849,12 +862,11 @@
       <div id="empty-state-section" class="empty-state">
         <div class="empty-state-icon">🔍</div>
         <h3>No active positions found</h3>
-        <p>Add your wallet address in Alert Settings to monitor your DeFi positions. Or explore the best yield opportunities right now.</p>
+        <p>Add your wallet address in Alert Settings to monitor your DeFi positions.</p>
         <button class="btn-explore" onclick="switchTab('pools', document.querySelectorAll('.tab-btn')[4])">Explore Pool Explorer →</button>
       </div>
     </div>
 
-    <!-- LIVE MARKETS -->
     <div id="tab-markets" class="tab-content">
       <div class="lp-warning">
         <div class="lp-warning-icon">⚠️</div>
