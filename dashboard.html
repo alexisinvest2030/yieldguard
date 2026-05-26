@@ -575,6 +575,17 @@
   .portfolio-stat-val.pnl-down { color:#E24B4A; }
   .portfolio-stat-sub { font-size:11px; color:var(--ink3); margin-top:2px; }
 
+
+  /* CUSTOM TAGS */
+  .pos-tag-wrap { margin-top:6px; display:flex; align-items:center; gap:5px; flex-wrap:wrap; min-height:22px; }
+  .pos-tag { font-size:10px; font-weight:600; padding:2px 8px; border-radius:99px; background:var(--accent-l); color:var(--accent-d); border:0.5px solid rgba(29,158,117,0.25); cursor:pointer; transition:all .15s; display:flex; align-items:center; gap:3px; }
+  .pos-tag:hover { background:rgba(226,75,74,0.1); color:#E24B4A; border-color:rgba(226,75,74,0.25); }
+  .pos-tag-add { font-size:10px; padding:2px 8px; border-radius:99px; border:0.5px dashed var(--border2); background:transparent; color:var(--ink3); cursor:pointer; transition:all .15s; font-family:inherit; }
+  .pos-tag-add:hover { border-color:var(--accent); color:var(--accent); }
+  .tag-input-wrap { display:flex; gap:6px; margin-top:4px; }
+  .tag-input { font-size:12px; font-family:inherit; padding:4px 10px; border-radius:var(--radius-sm); border:0.5px solid var(--accent); background:var(--paper); color:var(--ink); outline:none; flex:1; }
+  .tag-input-save { font-size:11px; font-family:inherit; padding:4px 10px; border-radius:var(--radius-sm); border:none; background:var(--accent); color:#fff; cursor:pointer; }
+
 </style>
 </head>
 <body>
@@ -1629,6 +1640,72 @@ async function loadRealPositions() {
   }
 }
 
+
+// ── CUSTOM TAGS ────────────────────────────────────────────
+function getTagKey(proto, asset, chain) {
+  return 'yg_tag_' + proto + '_' + asset + '_' + chain;
+}
+
+function getTags(proto, asset, chain) {
+  const raw = localStorage.getItem(getTagKey(proto, asset, chain));
+  return raw ? JSON.parse(raw) : [];
+}
+
+function saveTags(proto, asset, chain, tags) {
+  localStorage.setItem(getTagKey(proto, asset, chain), JSON.stringify(tags));
+}
+
+function removeTag(proto, asset, chain, tag) {
+  const tags = getTags(proto, asset, chain).filter(t => t !== tag);
+  saveTags(proto, asset, chain, tags);
+  renderDemoPositions();
+  setTimeout(() => loadRealPositions(), 500);
+}
+
+function showTagInput(cardEl, proto, asset, chain) {
+  // Rimuovi input precedente se esiste
+  const existing = cardEl.querySelector('.tag-input-wrap');
+  if (existing) { existing.remove(); return; }
+  
+  const wrap = document.createElement('div');
+  wrap.className = 'tag-input-wrap';
+  wrap.innerHTML = `
+    <input class="tag-input" id="tag-input-field" placeholder="e.g. DeFi, Long-term..." maxlength="20">
+    <button class="tag-input-save" onclick="addTagFromInput('${proto}','${asset}','${chain}')">Add</button>
+  `;
+  cardEl.querySelector('.pos-tag-wrap').insertAdjacentElement('afterend', wrap);
+  wrap.querySelector('input').focus();
+  wrap.querySelector('input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addTagFromInput(proto, asset, chain);
+    if (e.key === 'Escape') wrap.remove();
+  });
+}
+
+function addTagFromInput(proto, asset, chain) {
+  const input = document.getElementById('tag-input-field');
+  if (!input) return;
+  const val = input.value.trim();
+  if (!val) return;
+  const tags = getTags(proto, asset, chain);
+  if (!tags.includes(val) && tags.length < 5) {
+    tags.push(val);
+    saveTags(proto, asset, chain, tags);
+  }
+  renderDemoPositions();
+  setTimeout(() => loadRealPositions(), 500);
+}
+
+function renderTagsHtml(proto, asset, chain) {
+  const tags = getTags(proto, asset, chain);
+  const tagsHtml = tags.map(t =>
+    `<span class="pos-tag" onclick="removeTag('${proto}','${asset}','${chain}','${t}')" title="Click to remove">${t} ×</span>`
+  ).join('');
+  return `<div class="pos-tag-wrap">
+    ${tagsHtml}
+    <button class="pos-tag-add" onclick="showTagInput(this.closest('.position-card'),'${proto}','${asset}','${chain}')">+ Tag</button>
+  </div>`;
+}
+
 // ── DARK MODE ──────────────────────────────────────────────
 function toggleDark() {
   document.body.classList.toggle('dark');
@@ -1841,6 +1918,7 @@ function renderDemoPositions() {
     const chartBtn = poolId
       ? `<button class="pos-chart-btn" onclick="openApyModal('${poolId}','${p.proto} ${p.asset}','${p.chain}')">📈 APY History</button>`
       : '';
+    const tagsHtml = renderTagsHtml(p.proto, p.asset, p.chain);
     return `<div class="${cardCls}">
       <div class="position-card-top">
         <span class="pos-proto">${p.proto}</span>
@@ -1850,6 +1928,7 @@ function renderDemoPositions() {
       <div class="pos-apy ${apyCls}">${p.apy.toFixed(2)}%</div>
       <div class="pos-apy-sub">${p.type} APY &nbsp;<span class="type-badge ${typeCls}" style="font-size:10px;">${p.type}</span></div>
       ${alertHtml}
+      ${tagsHtml}
       ${chartBtn}
     </div>`;
   }).join('');
